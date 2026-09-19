@@ -15,6 +15,27 @@ import pandas as pd
 
 TRADING_DAYS = 252
 
+# Decimal places used when sorting risk tables. Contributions that are
+# conceptually zero come out of the linear algebra as +/-1e-18 and differ in
+# the last bits between BLAS implementations, so sorting on the raw value
+# orders them differently on different machines. Rounding the sort key (not the
+# reported value) to this precision makes those rows genuinely tie, and an
+# explicit ticker tiebreak then fixes the order everywhere.
+_SORT_PRECISION = 12
+
+
+def _stable_sort(frame: pd.DataFrame, column: str) -> pd.DataFrame:
+    """Sort descending by ``column``, breaking ties deterministically by index."""
+    frame = frame.copy()
+    frame.index.name = frame.index.name or "ticker"
+    key = frame.index.name
+    ordered = (
+        frame.assign(_sort_key=frame[column].round(_SORT_PRECISION))
+        .sort_values(["_sort_key", key], ascending=[False, True])
+        .drop(columns="_sort_key")
+    )
+    return ordered
+
 
 # ---------------------------------------------------------------------------
 # Return and volatility
@@ -317,7 +338,7 @@ def risk_contributions(
     mctr = (sigma @ w) / portfolio_vol
     ctr = w * mctr
 
-    return pd.DataFrame(
+    table = pd.DataFrame(
         {
             "weight": w,
             "annualised_volatility": np.sqrt(np.diag(sigma) * trading_days),
@@ -326,7 +347,13 @@ def risk_contributions(
             "pct_risk_contribution": ctr / portfolio_vol,
         },
         index=assets,
-    ).sort_values("pct_risk_contribution", ascending=False)
+    )
+    # A portfolio that holds only two of the fifteen instruments leaves
+    # thirteen rows at zero contribution, and without a deterministic tiebreak
+    # their order varies by platform — which makes the committed output
+    # irreproducible for no reason.
+    table.index.name = "ticker"
+    return _stable_sort(table, "pct_risk_contribution")
 
 
 def group_risk_contributions(
@@ -341,7 +368,7 @@ def group_risk_contributions(
     grouped["risk_to_capital_ratio"] = (
         grouped["pct_risk_contribution"] / grouped["weight"].replace(0, np.nan)
     )
-    return grouped.sort_values("pct_risk_contribution", ascending=False)
+    return _stable_sort(grouped, "pct_risk_contribution")
 
 
 # ---------------------------------------------------------------------------

@@ -85,8 +85,8 @@ Current target weights as at **2026-09-17**, with each holding's standalone annu
 |---|---:|---:|---:|
 | Equity Beta | 61.0% | 92.0% | 1.51 |
 | Fixed Income | 39.0% | 8.0% | 0.20 |
-| Commodity | 0.0% | 0.0% | — |
 | Cash | 0.0% | 0.0% | — |
+| Commodity | 0.0% | 0.0% | — |
 | Equity | 0.0% | 0.0% | — |
 | Real Estate | 0.0% | 0.0% | — |
 

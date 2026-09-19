@@ -177,3 +177,30 @@ def test_performance_summary_contains_required_fields(synthetic_returns, cfg):
     ]:
         assert field in summary
         assert not pd.isna(summary[field])
+
+
+def test_risk_contribution_order_is_deterministic(synthetic_returns, cfg):
+    """
+    Regression test. A portfolio holding only two of the fifteen instruments
+    leaves thirteen rows tied at exactly zero risk contribution. Without an
+    explicit tiebreak their order depends on the platform's sort
+    implementation, which made the committed outputs differ between macOS and
+    Linux for no substantive reason.
+    """
+    holdings = cfg.holdings
+    cov = synthetic_returns[holdings].cov()
+    weights = pd.Series(0.0, index=holdings)
+    weights[["SPY", "AGG"]] = [0.6, 0.4]
+
+    table = mx.risk_contributions(weights, cov)
+    # "Zero" contributions come out of the linear algebra as +/-1e-18, so the
+    # tolerance here is deliberately loose: the point is that they are
+    # conceptually tied and must therefore order by ticker.
+    ties = table[table["pct_risk_contribution"].abs() < 1e-10]
+    assert len(ties) > 5, "fixture should produce tied rows"
+    assert list(ties.index) == sorted(ties.index), "tied rows must sort by ticker"
+
+    # And the whole table is stable across repeated calls on shuffled input.
+    shuffled = weights.sample(frac=1.0, random_state=1)
+    again = mx.risk_contributions(shuffled, cov)
+    assert list(again.index) == list(table.index)

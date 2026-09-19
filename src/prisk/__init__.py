@@ -13,7 +13,7 @@ advice, or a forecast.
 """
 
 __version__ = "1.0.0"
-__author__ = "Pooja Master"
+__author__ = "pooja003-cloud"
 
 from prisk.config import Config, load_config
 

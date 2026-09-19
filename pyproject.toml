@@ -8,8 +8,7 @@ version = "1.0.0"
 description = "Multi-Asset Portfolio Risk and Stress-Testing Framework"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
-authors = [{ name = "Pooja Master" }]
+authors = [{ name = "pooja003-cloud" }]
 keywords = ["portfolio", "risk", "value-at-risk", "stress-testing", "finance"]
 
 [tool.setuptools.packages.find]

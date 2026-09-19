@@ -1,7 +1,7 @@
 # Investment Risk Memorandum
 
 **Subject:** Multi-Asset Portfolio Risk and Stress-Testing Framework — findings
-**Author:** Pooja Master
+**Author:** pooja003-cloud
 **Date:** 19 September 2026
 **Sample:** 1 June 2007 – 17 September 2026 · 4,855 trading days · 15 instruments
 **Notional for currency figures:** $1,000,000
@@ -189,5 +189,5 @@ model too conservative for the following two years.
 ---
 
 *Full methodology: `docs/methodology.md`. All figures reproducible via `python -m prisk.pipeline`.
-Source data: Yahoo Finance adjusted daily closes. 118 unit tests cover the calculations,
+Source data: Yahoo Finance adjusted daily closes. 119 unit tests cover the calculations,
 including explicit no-look-ahead checks on both the rebalancing engine and the VaR backtest.*

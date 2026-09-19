@@ -390,7 +390,7 @@ def component_var(
     component = w * marginal
     total = component.sum()
 
-    return pd.DataFrame(
+    table = pd.DataFrame(
         {
             "weight": w,
             "marginal_var": marginal,
@@ -398,7 +398,14 @@ def component_var(
             "pct_var_contribution": component / total if total != 0 else np.nan,
         },
         index=assets,
-    ).sort_values("component_var", ascending=False)
+    )
+    # Zero-weight holdings all contribute nothing, and without a deterministic
+    # tiebreak their order varies between platforms. See
+    # ``prisk.metrics._stable_sort``.
+    from prisk.metrics import _stable_sort
+
+    table.index.name = "ticker"
+    return _stable_sort(table, "component_var")
 
 
 # ---------------------------------------------------------------------------

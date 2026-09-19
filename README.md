@@ -89,7 +89,7 @@ portfolio-risk-framework/
 ├── docs/methodology.md         # full methodology and known limitations
 ├── outputs/tables/             # 41 CSVs — every figure's underlying data
 ├── outputs/figures/            # 30 publication-quality charts
-├── tests/                      # 118 tests, including explicit no-look-ahead checks
+├── tests/                      # 119 tests, including explicit no-look-ahead checks
 └── data/raw/prices_snapshot.csv  # versioned price snapshot for exact reproducibility
 ```
 
@@ -196,7 +196,3 @@ See [docs/methodology.md](docs/methodology.md#7-known-limitations) for the full 
 
 Python 3.10+ · pandas · NumPy · SciPy · scikit-learn (Ledoit-Wolf) · CVXPY · Matplotlib ·
 Seaborn · Streamlit · Plotly · pytest
-
-## License
-
-MIT — see [LICENSE](LICENSE).
