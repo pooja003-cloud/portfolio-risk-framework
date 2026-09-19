@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Testing / tooling
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Project data policy
+# ---------------------------------------------------------------------------
+# The raw per-ticker download cache is NOT versioned (it is reproducible by
+# running `python -m prisk.pipeline fetch`). The consolidated price panel in
+# data/processed IS versioned so that every published number can be rebuilt
+# exactly, even if a vendor revises history.
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/prices_snapshot.csv

@@ -1,0 +1,303 @@
+# =============================================================================
+# Multi-Asset Portfolio Risk and Stress-Testing Framework
+# Master configuration
+#
+# Every modelling choice that affects a published number lives in this file so
+# that results are reproducible and auditable. Nothing here is a forecast or a
+# recommendation; the portfolios are hypothetical research constructs.
+# =============================================================================
+
+data:
+  # Data source and price convention -----------------------------------------
+  source: "yahoo_finance"            # via the yfinance package
+  price_type: "adjusted_close"       # split- and dividend-adjusted closing price
+  frequency: "daily"
+
+  # Sample window -------------------------------------------------------------
+  # Start is driven by the youngest instrument in the universe (BIL, first
+  # traded 2007-05-30). Beginning in June 2007 keeps the full Global Financial
+  # Crisis inside the sample.
+  start_date: "2007-06-01"
+  end_date: "2026-09-18"
+
+  # Missing-data treatment ----------------------------------------------------
+  # 1. Union of trading days across all tickers is reduced to the NYSE-style
+  #    calendar implied by the benchmark (SPY) so that half-days and foreign
+  #    holidays do not create phantom zero-return days.
+  # 2. Interior gaps are forward-filled for at most `max_ffill_days` sessions
+  #    (a stale price implies a zero return, which is the correct treatment for
+  #    a non-trading day).
+  # 3. Any date still missing a price for any ticker after step 2 is dropped.
+  # 4. No back-filling is ever performed: that would inject look-ahead.
+  max_ffill_days: 3
+  drop_incomplete_rows: true
+  cache_dir: "data/raw"
+  processed_dir: "data/processed"
+
+# -----------------------------------------------------------------------------
+# Investable universe
+# -----------------------------------------------------------------------------
+# `sleeve` drives asset-allocation reporting and the stress-factor mapping.
+# `role`   distinguishes portfolio holdings from benchmark / reference series.
+universe:
+  # --- Equities (8 names, one per GICS-style sector bucket) ------------------
+  - ticker: AAPL
+    name: "Apple Inc."
+    sleeve: equity
+    sector: "Information Technology"
+    role: holding
+  - ticker: MSFT
+    name: "Microsoft Corporation"
+    sleeve: equity
+    sector: "Information Technology"
+    role: holding
+  - ticker: JNJ
+    name: "Johnson & Johnson"
+    sleeve: equity
+    sector: "Health Care"
+    role: holding
+  - ticker: JPM
+    name: "JPMorgan Chase & Co."
+    sleeve: equity
+    sector: "Financials"
+    role: holding
+  - ticker: XOM
+    name: "Exxon Mobil Corporation"
+    sleeve: equity
+    sector: "Energy"
+    role: holding
+  - ticker: PG
+    name: "Procter & Gamble Company"
+    sleeve: equity
+    sector: "Consumer Staples"
+    role: holding
+  - ticker: CAT
+    name: "Caterpillar Inc."
+    sleeve: equity
+    sector: "Industrials"
+    role: holding
+  - ticker: NEE
+    name: "NextEra Energy Inc."
+    sleeve: equity
+    sector: "Utilities"
+    role: holding
+
+  # --- Broad equity market ---------------------------------------------------
+  - ticker: SPY
+    name: "SPDR S&P 500 ETF Trust"
+    sleeve: equity_beta
+    sector: "Broad Equity"
+    role: holding_and_market      # also the market proxy used for beta
+
+  # --- Fixed income ----------------------------------------------------------
+  - ticker: AGG
+    name: "iShares Core U.S. Aggregate Bond ETF"
+    sleeve: fixed_income
+    sector: "Core Bonds"
+    role: holding
+  - ticker: TLT
+    name: "iShares 20+ Year Treasury Bond ETF"
+    sleeve: fixed_income
+    sector: "Long Duration Treasuries"
+    role: holding
+
+  # --- Commodities -----------------------------------------------------------
+  - ticker: DBC
+    name: "Invesco DB Commodity Index Tracking Fund"
+    sleeve: commodity
+    sector: "Broad Commodities"
+    role: holding
+  - ticker: GLD
+    name: "SPDR Gold Shares"
+    sleeve: commodity
+    sector: "Precious Metals"
+    role: holding
+
+  # --- Real assets -----------------------------------------------------------
+  - ticker: VNQ
+    name: "Vanguard Real Estate ETF"
+    sleeve: real_estate
+    sector: "U.S. REITs"
+    role: holding
+
+  # --- Cash / short-duration proxy ------------------------------------------
+  - ticker: BIL
+    name: "SPDR Bloomberg 1-3 Month T-Bill ETF"
+    sleeve: cash
+    sector: "T-Bills"
+    role: holding_and_riskfree    # also the risk-free proxy
+
+# -----------------------------------------------------------------------------
+# Portfolio construction
+# -----------------------------------------------------------------------------
+portfolios:
+  # Common settings -----------------------------------------------------------
+  rebalance_frequency: "Q"          # quarter-end rebalancing
+  estimation_window: 756            # trading days (~3y) used to estimate Sigma
+  min_estimation_window: 252        # do not form an optimised weight before this
+  transaction_cost_bps: 5.0         # round-trip cost applied to turnover
+  covariance_estimator: "ledoit_wolf"   # {"sample", "ledoit_wolf"}
+
+  equal_weight:
+    label: "Equal Weight"
+    description: >-
+      1/N across all 15 holdings, reset each quarter. Assumption-free control
+      portfolio: any value added by the optimised sleeves must be measured
+      against it.
+
+  minimum_variance:
+    label: "Minimum Variance"
+    description: >-
+      Long-only global minimum-variance portfolio solved on the shrunk
+      covariance matrix estimated from the trailing estimation window.
+    long_only: true
+    max_weight: 0.25                # box constraint prevents cash/AGG corner
+    min_weight: 0.00
+
+  volatility_target:
+    label: "Volatility Target 8%"
+    description: >-
+      Risk-parity growth sleeve levered up or down each quarter so that the
+      forecast annualised volatility equals the target; the residual is held in
+      the cash proxy. No borrowing is permitted.
+    target_volatility: 0.08         # annualised
+    max_growth_allocation: 1.00     # no leverage
+    min_growth_allocation: 0.10
+    base_allocation: "risk_parity"  # {"risk_parity", "equal_weight"}
+
+  benchmark:
+    label: "60/40 Benchmark"
+    description: "Static 60% SPY / 40% AGG, rebalanced quarterly."
+    weights:
+      SPY: 0.60
+      AGG: 0.40
+
+# -----------------------------------------------------------------------------
+# Risk measurement
+# -----------------------------------------------------------------------------
+risk:
+  trading_days: 252
+  # Notional used to express VaR and stress losses in currency terms. It is a
+  # reporting convenience only: every portfolio is unlevered and fully
+  # invested, so all results scale linearly with this number.
+  portfolio_value: 1000000
+  confidence_levels: [0.95, 0.99]
+  var_horizons_days: [1, 10]
+  rolling_vol_window: 63            # ~one quarter
+  risk_free_source: "BIL"           # daily total return of the cash proxy
+  sortino_mar: 0.0                  # minimum acceptable return, annualised
+
+  monte_carlo:
+    n_simulations: 100000
+    distribution: "student_t"       # {"normal", "student_t"}
+    t_degrees_of_freedom: 5         # fitted per run; this is the fallback
+    seed: 20260919
+    estimation_window: 756
+
+  parametric:
+    distributions: ["normal", "student_t"]
+    use_cornish_fisher: true        # skew/kurtosis-adjusted normal VaR
+
+  backtest:
+    var_method: "historical"
+    confidence_level: 0.99
+    rolling_window: 500             # Basel-style 500-day observation window
+    test_window_days: 250           # exceptions counted over trailing 250 days
+
+# -----------------------------------------------------------------------------
+# Stress testing
+# -----------------------------------------------------------------------------
+# All scenarios are hypothetical analytical assumptions, not forecasts.
+stress:
+  # (a) Historical episode replay: actual realised returns are re-run through
+  #     the current portfolio weights.
+  historical_episodes:
+    - name: "Global Financial Crisis"
+      start: "2007-10-09"
+      end: "2009-03-09"
+      note: "S&P 500 peak to trough; credit and liquidity crisis."
+    - name: "Euro Crisis / U.S. Downgrade"
+      start: "2011-07-07"
+      end: "2011-10-03"
+      note: "U.S. sovereign downgrade and euro-area sovereign stress."
+    - name: "China Devaluation / Oil Collapse"
+      start: "2015-08-10"
+      end: "2016-02-11"
+      note: "CNY devaluation, commodity price collapse."
+    - name: "COVID-19 Crash"
+      start: "2020-02-19"
+      end: "2020-03-23"
+      note: "Fastest 30% equity drawdown on record; correlations to one."
+    - name: "2022 Inflation and Rate Shock"
+      start: "2022-01-03"
+      end: "2022-10-12"
+      note: "Simultaneous equity and duration losses; 60/40 diversification failure."
+    - name: "2018 Volatility Spike"
+      start: "2018-09-20"
+      end: "2018-12-24"
+      note: "Policy-tightening drawdown and VIX spike."
+
+  # (b) Hypothetical factor shocks. Asset sensitivities are estimated by a
+  #     multivariate regression of each asset's daily return on the factor
+  #     proxies below; the shock is then propagated through the betas.
+  #
+  #     IMPORTANT SIGN CONVENTION: every shock is expressed as a TOTAL RETURN
+  #     on the factor proxy, not as a move in a yield. The `duration` factor is
+  #     the return on 20y+ Treasuries, so a RISE in interest rates is a
+  #     NEGATIVE duration shock. A +200bp parallel shift against TLT's ~17-year
+  #     effective duration implies roughly -30%; the same shift against AGG's
+  #     ~6-year duration implies roughly -11%, which the regression beta
+  #     (~0.35 of TLT) reproduces without being assumed.
+  factor_proxies:
+    equity: "SPY"
+    duration: "TLT"
+    commodity: "DBC"
+    real_estate: "VNQ"
+
+  hypothetical_scenarios:
+    - name: "Equity Bear Market"
+      description: >-
+        Broad equity decline of 20% with a modest flight to quality that lifts
+        long duration 5%.
+      shocks: {equity: -0.20, duration: 0.05, commodity: -0.05, real_estate: -0.18}
+    - name: "Rate Shock (+200bp)"
+      description: >-
+        Parallel upward shift of 200bp in the curve: long Treasuries -30%,
+        equities -8% on the discount-rate effect, REITs -12% on their
+        duration sensitivity.
+      shocks: {equity: -0.08, duration: -0.30, commodity: 0.00, real_estate: -0.12}
+    - name: "Commodity Collapse"
+      description: >-
+        Global demand shock: the commodity complex falls 30%, equities -10%,
+        with a 6% duration rally as growth expectations are marked down.
+      shocks: {equity: -0.10, duration: 0.06, commodity: -0.30, real_estate: -0.08}
+    - name: "Volatility Spike"
+      description: >-
+        Sharp risk-off repricing with pairwise correlations converging to 0.90.
+      shocks: {equity: -0.12, duration: 0.04, commodity: -0.10, real_estate: -0.12}
+      correlation_override: 0.90
+    - name: "Stagflation: Equity + Rate Shock"
+      description: >-
+        Combined shock in which bonds fail to hedge equities, as in 2022:
+        equities -25%, long duration -20%, commodities +15%.
+      shocks: {equity: -0.25, duration: -0.20, commodity: 0.15, real_estate: -0.22}
+    - name: "Severe Combined Stress"
+      description: >-
+        Severe scenario: equities decline 30%, long duration declines 25%,
+        commodities decline 20% and REITs decline 35%, with correlations
+        forced to 0.95. These are hypothetical stress assumptions, not
+        forecasts.
+      shocks: {equity: -0.30, duration: -0.25, commodity: -0.20, real_estate: -0.35}
+      correlation_override: 0.95
+
+# -----------------------------------------------------------------------------
+# Output
+# -----------------------------------------------------------------------------
+output:
+  figures_dir: "outputs/figures"
+  tables_dir: "outputs/tables"
+  dpi: 160
+  style: "prisk"
+  # The portfolio used for the single-portfolio deep-dive exhibits (Monte Carlo
+  # distribution, exceptions by year). All four appear in every comparison.
+  primary_portfolio: "volatility_target"
