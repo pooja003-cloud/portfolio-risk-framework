@@ -96,7 +96,7 @@ portfolio-risk-framework/
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-username>/portfolio-risk-framework.git
+git clone https://github.com/pooja003-cloud/portfolio-risk-framework.git
 cd portfolio-risk-framework
 pip install -r requirements.txt
 
@@ -105,6 +105,14 @@ PYTHONPATH=src python -m prisk.pipeline
 
 # Interactive dashboard (app.py puts src/ on the path itself)
 streamlit run dashboard/app.py
+```
+
+`requirements.txt` holds only what the pipeline and the dashboard need, so it
+stays light enough to deploy. The notebooks, the test suite, the CVXPY solver
+and the price downloader are extras:
+
+```bash
+pip install -r requirements-dev.txt
 
 # Tests
 PYTHONPATH=src pytest tests -q
@@ -112,6 +120,10 @@ PYTHONPATH=src pytest tests -q
 # Refresh prices from Yahoo Finance and extend the sample
 PYTHONPATH=src python -m prisk.pipeline fetch --force
 ```
+
+Neither CVXPY nor yfinance is required: the minimum-variance optimiser falls
+back to SciPy's SLSQP (a unit test asserts the two solvers agree), and the
+committed price snapshot means the pipeline never needs the network.
 
 The repository ships a snapshot of the price panel, so a fresh clone reproduces every number
 above **exactly and without network access**.

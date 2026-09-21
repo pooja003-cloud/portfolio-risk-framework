@@ -1,0 +1,29 @@
+# Development dependencies
+# =============================================================================
+# Everything in requirements.txt, plus the tooling needed to refresh the data,
+# run the notebooks and run the tests.
+#
+# These are kept out of requirements.txt because that file is what Streamlit
+# Community Cloud installs. CVXPY in particular can take several minutes to
+# resolve and occasionally fails to build, which would take the deployment
+# down with it — and the project does not need it: the minimum-variance
+# optimiser falls back to SciPy's SLSQP automatically, and a unit test asserts
+# the two solvers agree.
+
+-r requirements.txt
+
+# Price data refresh — optional. The repository ships a snapshot at
+# data/raw/prices_snapshot.csv, so the pipeline runs offline without this.
+yfinance>=0.2.40
+
+# Convex solver for the minimum-variance QP. Optional: SciPy SLSQP is the
+# fallback and `test_cvxpy_and_scipy_solvers_agree` checks they match.
+cvxpy>=1.4
+
+# Notebooks
+jupyter>=1.0
+ipykernel>=6.29
+nbconvert>=7.0
+
+# Tests
+pytest>=8.0
