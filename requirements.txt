@@ -21,5 +21,5 @@ matplotlib>=3.8
 seaborn>=0.13
 
 # Interactive dashboard
-streamlit>=1.35
+streamlit>=1.49            # width="stretch" replaces the deprecated use_container_width
 plotly>=5.20

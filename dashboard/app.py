@@ -245,7 +245,7 @@ with tabs[0]:
         ))
     growth.update_yaxes(type="log", title="Growth of $1 (log scale)")
     st.plotly_chart(style(growth, 440, title="Growth of $1, net of costs"),
-                    use_container_width=True, theme=None)
+                    width="stretch", theme=None)
 
     left, right = st.columns(2)
     drawdown = go.Figure()
@@ -258,7 +258,7 @@ with tabs[0]:
         ))
     drawdown.update_yaxes(tickformat=".0%", title="Drawdown")
     left.plotly_chart(style(drawdown, 380, title="Drawdown from prior peak"),
-                      use_container_width=True, theme=None)
+                      width="stretch", theme=None)
 
     vol = go.Figure()
     for n in names:
@@ -277,7 +277,7 @@ with tabs[0]:
     vol.update_yaxes(tickformat=".0%", title="Annualised volatility")
     right.plotly_chart(
         style(vol, 380, title=f"Rolling {cfg.risk['rolling_vol_window']}-day volatility"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     st.subheader("Performance and risk summary")
@@ -294,7 +294,7 @@ with tabs[0]:
             "skewness": "{:.2f}", "excess_kurtosis": "{:.1f}",
             "upside_capture": "{:.2f}", "downside_capture": "{:.2f}",
         }),
-        use_container_width=True,
+        width="stretch",
     )
 
 # ---------------------------------------------------------------------------
@@ -321,7 +321,7 @@ with tabs[1]:
     bars.update_xaxes(tickformat=".0%")
     bars.update_layout(barmode="group", hovermode="y unified")
     st.plotly_chart(style(bars, 560, title="Capital weight versus risk contribution"),
-                    use_container_width=True, theme=None)
+                    width="stretch", theme=None)
 
     left, right = st.columns([1, 1])
     grouped = mx.group_risk_contributions(contributions, cfg.sleeve_map())
@@ -331,7 +331,7 @@ with tabs[1]:
             "weight": "{:.1%}", "component_contribution": "{:.2%}",
             "pct_risk_contribution": "{:.1%}", "risk_to_capital_ratio": "{:.2f}",
         }),
-        use_container_width=True,
+        width="stretch",
     )
     right.markdown("**Correlation matrix (estimation window)**")
     correlation = returns[holdings].iloc[-window:].corr()
@@ -342,7 +342,7 @@ with tabs[1]:
         zmid=0, zmin=-1, zmax=1, colorbar=dict(outlinewidth=0),
     ))
     right.plotly_chart(style(heat, 480, hovermode="closest"),
-                       use_container_width=True, theme=None)
+                       width="stretch", theme=None)
 
 # ---------------------------------------------------------------------------
 # Value at Risk
@@ -382,7 +382,7 @@ with tabs[2]:
     st.plotly_chart(
         style(bar, 380, hovermode="closest",
               title="Same portfolio, same data — the method moves the answer"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     left, right = st.columns(2)
@@ -409,7 +409,7 @@ with tabs[2]:
     hist.update_xaxes(tickformat=".1%", title="Daily return")
     left.plotly_chart(
         style(hist, 400, hovermode="closest", title="Historical return distribution"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     sim = go.Figure()
@@ -426,7 +426,7 @@ with tabs[2]:
         style(sim, 400, hovermode="closest",
               title=f"Monte Carlo — {mc.n_simulations:,} paths, "
                     f"Student-t (v={mc.dof:.1f})"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     st.subheader("Component VaR")
@@ -439,7 +439,7 @@ with tabs[2]:
             "weight": "{:.2%}", "marginal_var": "{:.4f}",
             "component_var": "{:.4%}", "pct_var_contribution": "{:.1%}",
         }),
-        use_container_width=True,
+        width="stretch",
     )
 
 # ---------------------------------------------------------------------------
@@ -470,7 +470,7 @@ with tabs[3]:
     episodes.update_xaxes(tickformat=".0%", range=[worst * 1.22, 0.015])
     episodes.update_layout(barmode="group", hovermode="y unified")
     st.plotly_chart(style(episodes, 520, title="Total return through each episode"),
-                    use_container_width=True, theme=None)
+                    width="stretch", theme=None)
 
     st.subheader("Build your own scenario")
     st.caption(
@@ -517,7 +517,7 @@ with tabs[3]:
     st.plotly_chart(
         style(waterfall, 400, hovermode="closest",
               title=f"{labels[selected]}: who causes the loss"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     st.subheader("Correlation stress")
@@ -533,7 +533,7 @@ with tabs[3]:
         correlation_stress.style.format({
             "annualised_volatility": "{:.2%}", "vol_multiple": "{:.2f}x",
         }),
-        use_container_width=True, hide_index=True,
+        width="stretch", hide_index=True,
     )
 
 # ---------------------------------------------------------------------------
@@ -579,7 +579,7 @@ with tabs[4]:
     chart.update_yaxes(tickformat=".1%")
     st.plotly_chart(
         style(chart, 460, title="Realised returns against the VaR forecast"),
-        use_container_width=True, theme=None
+        width="stretch", theme=None
     )
 
     st.subheader("Exceptions by calendar year")
@@ -598,7 +598,7 @@ with tabs[4]:
         x=by_year.index.astype(str), y=by_year["observations"] * (1 - confidence),
         name="Expected", line=dict(color=INK_SECONDARY, dash="dash", width=1.6),
     ))
-    st.plotly_chart(style(year_chart, 380), use_container_width=True, theme=None)
+    st.plotly_chart(style(year_chart, 380), width="stretch", theme=None)
 
 # ---------------------------------------------------------------------------
 # Allocation
@@ -617,7 +617,7 @@ with tabs[5]:
             fillcolor=CATEGORICAL[i % len(CATEGORICAL)],
         ))
     area.update_yaxes(tickformat=".0%", range=[0, 1])
-    st.plotly_chart(style(area, 420), use_container_width=True, theme=None)
+    st.plotly_chart(style(area, 420), width="stretch", theme=None)
 
     cols = st.columns(3)
     cols[0].metric("Rebalances", portfolios[selected]["n_rebalances"])
@@ -643,11 +643,11 @@ with tabs[5]:
             "weight": "{:.2%}", "annualised_volatility": "{:.1%}",
             "pct_risk": "{:.1%}",
         }),
-        use_container_width=True,
+        width="stretch",
     )
 
     st.subheader("Rebalance history")
     st.dataframe(
         portfolios[selected]["weights_target"].style.format("{:.2%}"),
-        use_container_width=True,
+        width="stretch",
     )
