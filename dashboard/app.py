@@ -64,24 +64,64 @@ st.set_page_config(
 def style(
     fig: go.Figure, height: int = 420, hovermode: str = "x unified", **kwargs
 ) -> go.Figure:
-    """Apply the shared chart styling. ``hovermode`` is named so that callers
-    can override it without colliding with the default passed through."""
+    """
+    Apply the shared chart styling.
+
+    Every text colour is set explicitly rather than left to inherit. Plotly's
+    global ``font.color`` does *not* cascade into titles, legends and axis
+    titles once another template has an opinion about them, so those are
+    assigned individually — otherwise a dark host theme renders them in a pale
+    ink that vanishes against the chart's light surface.
+
+    ``hovermode`` is a named parameter so callers can override it without
+    colliding with the default passed through ``**kwargs``.
+    """
+    title = kwargs.pop("title", None)
+
     fig.update_layout(
         height=height,
         paper_bgcolor=SURFACE,
         plot_bgcolor=SURFACE,
         font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif",
                   size=12, color=INK),
-        margin=dict(l=10, r=10, t=40, b=10),
+        # Room at the top for a title line and a legend line that do not
+        # overlap each other. The left and bottom values are floors only —
+        # `automargin` on both axes grows them to fit the tick labels and axis
+        # titles, which a fixed margin clips.
+        margin=dict(l=10, r=10, t=86, b=40),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, x=0,
-                    bgcolor="rgba(0,0,0,0)"),
+                    bgcolor="rgba(0,0,0,0)",
+                    font=dict(color=INK_SECONDARY, size=11.5)),
         hovermode=hovermode,
         **kwargs,
     )
-    fig.update_xaxes(showgrid=False, linecolor=GRID, tickcolor=MUTED,
-                     tickfont=dict(color=MUTED))
-    fig.update_yaxes(gridcolor=GRID, zerolinecolor=GRID, linecolor=SURFACE,
-                     tickfont=dict(color=MUTED))
+
+    if title is not None:
+        # Bold via markup rather than font(weight=...), which older Plotly
+        # releases reject — Streamlit Cloud does not always ship the newest.
+        fig.update_layout(title=dict(
+            text=f"<b>{title}</b>", x=0, xanchor="left", y=0.97, yanchor="top",
+            font=dict(color=INK, size=15),
+        ))
+
+    fig.update_xaxes(
+        showgrid=False, linecolor=GRID, tickcolor=MUTED,
+        tickfont=dict(color=MUTED),
+        title_font=dict(color=INK_SECONDARY, size=11.5),
+        automargin=True,
+    )
+    fig.update_yaxes(
+        gridcolor=GRID, zerolinecolor=GRID, linecolor=SURFACE,
+        tickfont=dict(color=MUTED),
+        title_font=dict(color=INK_SECONDARY, size=11.5),
+        automargin=True,
+    )
+    # Annotations (the vline labels on the VaR/ES markers) inherit nothing
+    # useful either — but only fill in the ones that have not set their own
+    # colour, so a caller can keep a label matched to the line it belongs to.
+    for annotation in fig.layout.annotations:
+        if annotation.font is None or annotation.font.color is None:
+            annotation.font = dict(color=INK_SECONDARY, size=11)
     return fig
 
 
@@ -205,7 +245,7 @@ with tabs[0]:
         ))
     growth.update_yaxes(type="log", title="Growth of $1 (log scale)")
     st.plotly_chart(style(growth, 440, title="Growth of $1, net of costs"),
-                    use_container_width=True)
+                    use_container_width=True, theme=None)
 
     left, right = st.columns(2)
     drawdown = go.Figure()
@@ -218,7 +258,7 @@ with tabs[0]:
         ))
     drawdown.update_yaxes(tickformat=".0%", title="Drawdown")
     left.plotly_chart(style(drawdown, 380, title="Drawdown from prior peak"),
-                      use_container_width=True)
+                      use_container_width=True, theme=None)
 
     vol = go.Figure()
     for n in names:
@@ -237,7 +277,7 @@ with tabs[0]:
     vol.update_yaxes(tickformat=".0%", title="Annualised volatility")
     right.plotly_chart(
         style(vol, 380, title=f"Rolling {cfg.risk['rolling_vol_window']}-day volatility"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     st.subheader("Performance and risk summary")
@@ -281,7 +321,7 @@ with tabs[1]:
     bars.update_xaxes(tickformat=".0%")
     bars.update_layout(barmode="group", hovermode="y unified")
     st.plotly_chart(style(bars, 560, title="Capital weight versus risk contribution"),
-                    use_container_width=True)
+                    use_container_width=True, theme=None)
 
     left, right = st.columns([1, 1])
     grouped = mx.group_risk_contributions(contributions, cfg.sleeve_map())
@@ -302,7 +342,7 @@ with tabs[1]:
         zmid=0, zmin=-1, zmax=1, colorbar=dict(outlinewidth=0),
     ))
     right.plotly_chart(style(heat, 480, hovermode="closest"),
-                       use_container_width=True)
+                       use_container_width=True, theme=None)
 
 # ---------------------------------------------------------------------------
 # Value at Risk
@@ -327,8 +367,11 @@ with tabs[2]:
 
     cols = st.columns(len(methods))
     for col, (name, var) in zip(cols, methods.items()):
-        col.metric(name, f"{var:.2%}", f"${var * portfolio_value:,.0f}",
-                   delta_color="off")
+        # The currency figure goes in a caption rather than st.metric's delta
+        # slot: a delta renders with an arrow, and an upward arrow beside a
+        # loss reads as "risk improved" when it means the opposite.
+        col.metric(name, f"{var:.2%}")
+        col.caption(f"${var * portfolio_value:,.0f} loss")
 
     bar = go.Figure(go.Bar(
         x=list(methods), y=list(methods.values()),
@@ -339,7 +382,7 @@ with tabs[2]:
     st.plotly_chart(
         style(bar, 380, hovermode="closest",
               title="Same portfolio, same data — the method moves the answer"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     left, right = st.columns(2)
@@ -351,14 +394,22 @@ with tabs[2]:
         x=selected_returns.values, nbinsx=140, marker_color="#9ec5f4",
         name="Daily returns",
     ))
+    # ES always sits to the left of VaR and the two lines are close together,
+    # so their labels are stacked on different rows rather than left to
+    # collide on the same one.
     hist.add_vline(x=-var_hist, line=dict(color=CRITICAL, width=2),
-                   annotation_text=f"VaR {var_hist:.2%}")
+                   annotation_text=f"VaR {var_hist:.2%}",
+                   annotation_position="top right",
+                   annotation_font=dict(color=CRITICAL, size=11))
     hist.add_vline(x=-es_hist, line=dict(color="#7d1f1f", width=2, dash="dot"),
-                   annotation_text=f"ES {es_hist:.2%}")
+                   annotation_text=f"ES {es_hist:.2%}",
+                   annotation_position="top left",
+                   annotation_yshift=-18,
+                   annotation_font=dict(color="#7d1f1f", size=11))
     hist.update_xaxes(tickformat=".1%", title="Daily return")
     left.plotly_chart(
         style(hist, 400, hovermode="closest", title="Historical return distribution"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     sim = go.Figure()
@@ -367,13 +418,15 @@ with tabs[2]:
         name="Simulated",
     ))
     sim.add_vline(x=-mc.var[confidence], line=dict(color=CRITICAL, width=2),
-                  annotation_text=f"VaR {mc.var[confidence]:.2%}")
+                  annotation_text=f"VaR {mc.var[confidence]:.2%}",
+                  annotation_position="top right",
+                  annotation_font=dict(color=CRITICAL, size=11))
     sim.update_xaxes(tickformat=".1%", title=f"Simulated {horizon}-day return")
     right.plotly_chart(
         style(sim, 400, hovermode="closest",
               title=f"Monte Carlo — {mc.n_simulations:,} paths, "
                     f"Student-t (v={mc.dof:.1f})"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     st.subheader("Component VaR")
@@ -417,7 +470,7 @@ with tabs[3]:
     episodes.update_xaxes(tickformat=".0%", range=[worst * 1.22, 0.015])
     episodes.update_layout(barmode="group", hovermode="y unified")
     st.plotly_chart(style(episodes, 520, title="Total return through each episode"),
-                    use_container_width=True)
+                    use_container_width=True, theme=None)
 
     st.subheader("Build your own scenario")
     st.caption(
@@ -442,8 +495,8 @@ with tabs[3]:
 
     cols = st.columns(len(names))
     for col, n in zip(cols, names):
-        col.metric(labels[n], f"{impacts[n]:.2%}",
-                   f"${impacts[n] * portfolio_value:,.0f}", delta_color="inverse")
+        col.metric(labels[n], f"{impacts[n]:.2%}")
+        col.caption(f"${abs(impacts[n]) * portfolio_value:,.0f} loss")
 
     detail_shocks = stx.apply_factor_scenario(weights_map[selected], betas, shocks)
     aligned = weights_map[selected].reindex(detail_shocks.index).fillna(0.0)
@@ -464,7 +517,7 @@ with tabs[3]:
     st.plotly_chart(
         style(waterfall, 400, hovermode="closest",
               title=f"{labels[selected]}: who causes the loss"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     st.subheader("Correlation stress")
@@ -526,7 +579,7 @@ with tabs[4]:
     chart.update_yaxes(tickformat=".1%")
     st.plotly_chart(
         style(chart, 460, title="Realised returns against the VaR forecast"),
-        use_container_width=True,
+        use_container_width=True, theme=None
     )
 
     st.subheader("Exceptions by calendar year")
@@ -545,7 +598,7 @@ with tabs[4]:
         x=by_year.index.astype(str), y=by_year["observations"] * (1 - confidence),
         name="Expected", line=dict(color=INK_SECONDARY, dash="dash", width=1.6),
     ))
-    st.plotly_chart(style(year_chart, 380), use_container_width=True)
+    st.plotly_chart(style(year_chart, 380), use_container_width=True, theme=None)
 
 # ---------------------------------------------------------------------------
 # Allocation
@@ -564,7 +617,7 @@ with tabs[5]:
             fillcolor=CATEGORICAL[i % len(CATEGORICAL)],
         ))
     area.update_yaxes(tickformat=".0%", range=[0, 1])
-    st.plotly_chart(style(area, 420), use_container_width=True)
+    st.plotly_chart(style(area, 420), use_container_width=True, theme=None)
 
     cols = st.columns(3)
     cols[0].metric("Rebalances", portfolios[selected]["n_rebalances"])

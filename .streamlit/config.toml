@@ -1,0 +1,26 @@
+# Streamlit theme
+# =============================================================================
+# The dashboard is pinned to the light theme deliberately.
+#
+# Every chart in this project — the matplotlib figures in `prisk.plots` and the
+# Plotly charts here — is drawn on one palette whose contrast was validated
+# against a light surface. Streamlit otherwise follows the viewer's operating
+# system, so a reader in dark mode would get a dark page wrapped around light
+# charts, and Streamlit's own dark template would override the chart text
+# colours into an ink that disappears against the chart's own background.
+#
+# A dark palette is a design exercise in its own right — every hue needs
+# re-stepping and re-validating for the dark surface, not simply inverting.
+# Until that exists, one consistent light theme is the honest choice.
+
+[theme]
+base = "light"
+primaryColor = "#2a78d6"          # categorical slot 1 — sliders, focus states
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f9f9f7"   # sidebar and table headers
+textColor = "#0b0b0b"             # primary ink
+font = "sans serif"
+
+[server]
+# The price panel ships with the repo, so nothing here watches for new data.
+runOnSave = false

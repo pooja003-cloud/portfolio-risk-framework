@@ -103,8 +103,8 @@ pip install -r requirements.txt
 # Rebuild every table and figure (~50 seconds, fully offline from the shipped snapshot)
 PYTHONPATH=src python -m prisk.pipeline
 
-# Interactive dashboard
-PYTHONPATH=src streamlit run dashboard/app.py
+# Interactive dashboard (app.py puts src/ on the path itself)
+streamlit run dashboard/app.py
 
 # Tests
 PYTHONPATH=src pytest tests -q
