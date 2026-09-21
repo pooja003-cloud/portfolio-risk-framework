@@ -1,0 +1,38 @@
+# GitHub Linguist configuration
+# =============================================================================
+# Linguist measures languages by BYTES, not by files. The three analysis
+# notebooks are committed with their outputs so they render on GitHub without
+# being run, which means each one embeds its rendered charts as base64 PNG
+# data: 4.2 MB of notebooks against 222 KB of actual Python source.
+#
+# Left alone, that reports the repository as 95% "Jupyter Notebook" — a
+# statement about the file format rather than about the work. The notebooks'
+# code cells are Python too, and every algorithm they call lives in src/prisk.
+#
+# Marking them as documentation keeps them fully viewable, searchable and
+# diffable on GitHub while letting the language bar reflect the source.
+*.ipynb linguist-documentation
+
+# Generated artefacts: produced by `python -m prisk.pipeline`, versioned so
+# that results are reproducible, but not hand-written. Excluding them keeps
+# the language statistics honest and collapses their diffs by default, so a
+# regenerated run does not bury a code review under thousands of changed
+# numbers.
+outputs/**              linguist-generated
+data/processed/**       linguist-generated
+data/raw/*.csv          linguist-generated
+docs/img/**             linguist-generated
+
+# Treat notebooks as text so diffs are at least inspectable.
+*.ipynb text
+
+# Normalise line endings for source and text files.
+*.py     text diff=python
+*.md     text
+*.yaml   text
+*.toml   text
+*.txt    text
+*.csv    text
+
+# Binary assets.
+*.png    binary
