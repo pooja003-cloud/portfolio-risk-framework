@@ -5,6 +5,8 @@ normal and stressed conditions: volatility, beta, drawdown, Value at Risk by thr
 methods, expected shortfall, Monte Carlo simulation, historical and hypothetical stress
 scenarios, and a statistical backtest of the VaR models themselves.
 
+**[Live dashboard →](https://portfolio-risk-framework.streamlit.app)** · [Investment-risk memo](reports/investment_risk_memo.md) · [Methodology](docs/methodology.md)
+
 > **Disclaimer.** Every portfolio here is a *hypothetical research construct* built from
 > publicly available price data. Nothing in this repository represents a real client account,
 > real assets under management, investment advice, or a forecast. The stress scenarios are
@@ -38,7 +40,7 @@ output tables by `python -m prisk.pipeline`, so it can't drift from the numbers 
 | Volatility Target 8% | 7.55% | 7.41% | **0.84** | 1.19 | −15.7% | 0.30 | 1.22% | 1.97% |
 | 60/40 Benchmark | 8.82% | 11.83% | 0.66 | 0.94 | −29.8% | 0.59 | 2.23% | 3.21% |
 
-### Five findings
+### Six findings
 
 **1. Construction moved risk around; it didn't add return.** The three research portfolios
 came out within 0.02 of each other on Sharpe (0.82 to 0.84) across a 2.6× spread in
@@ -58,7 +60,8 @@ Kupiec p < 0.001. Excess kurtosis runs between 10 and 19 across the portfolios. 
 distribution the equal-weight portfolio's worst day should happen once in the age of the
 universe. It happened in March 2020.
 
-**4. Every VaR method fails the independence test.** The exceptions cluster in 2020 and 2022,
+**4. Every VaR method fails the independence test.** Across about 4,080 rolling one-day
+forecasts per portfolio (500-day window), the exceptions cluster in 2020 and 2022,
 because none of the four methods models volatility clustering. The chart shows it directly:
 the forecast is a step function that jumps *after* the crisis rather than before it.
 
@@ -70,6 +73,13 @@ sidestepped the equity crises and concentrated the portfolio into duration, whic
 rate shock hit.
 
 ![Historical stress](outputs/figures/11_stress_historical.png)
+
+**6. The 60/40 benchmark was the most exposed portfolio in 2022, and correlation is the hidden
+risk.** Replaying the 2022 inflation and rate shock, the 60/40 lost −20.5%, twice the
+equal-weight portfolio's −10.1%, because its stocks and bonds fell together. In the
+correlation stress, which holds every volatility fixed and only pushes pairwise correlations
+up to 0.95, the volatility-target portfolio's volatility rose 2.2× (7.6% to 17.0%).
+Diversification breaking down is enough on its own to do that.
 
 ---
 
