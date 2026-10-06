@@ -9,7 +9,7 @@ The dashboard is a front end onto the same ``prisk`` package that produces the
 static report, so nothing shown here is computed twice or differently. Every
 panel recomputes live from the price panel, which lets a reader change the
 confidence level, the horizon, or the stress assumptions and watch the numbers
-move — the point being that a risk number is the output of a set of choices,
+move. The point is that a risk number is the output of a set of choices,
 not a fact.
 
 DISCLAIMER: hypothetical portfolios built on public data for research purposes.
@@ -70,7 +70,7 @@ def style(
     Every text colour is set explicitly rather than left to inherit. Plotly's
     global ``font.color`` does *not* cascade into titles, legends and axis
     titles once another template has an opinion about them, so those are
-    assigned individually — otherwise a dark host theme renders them in a pale
+    assigned individually, otherwise a dark host theme renders them in a pale
     ink that vanishes against the chart's light surface.
 
     ``hovermode`` is a named parameter so callers can override it without
@@ -85,7 +85,7 @@ def style(
         font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif",
                   size=12, color=INK),
         # Room at the top for a title line and a legend line that do not
-        # overlap each other. The left and bottom values are floors only —
+        # overlap each other. The left and bottom values are floors only,
         # `automargin` on both axes grows them to fit the tick labels and axis
         # titles, which a fixed margin clips.
         margin=dict(l=10, r=10, t=86, b=40),
@@ -98,7 +98,7 @@ def style(
 
     if title is not None:
         # Bold via markup rather than font(weight=...), which older Plotly
-        # releases reject — Streamlit Cloud does not always ship the newest.
+        # releases reject it, and Streamlit Cloud does not always ship the newest.
         fig.update_layout(title=dict(
             text=f"<b>{title}</b>", x=0, xanchor="left", y=0.97, yanchor="top",
             font=dict(color=INK, size=15),
@@ -117,7 +117,7 @@ def style(
         automargin=True,
     )
     # Annotations (the vline labels on the VaR/ES markers) inherit nothing
-    # useful either — but only fill in the ones that have not set their own
+    # useful either, but only fill in the ones that have not set their own
     # colour, so a caller can keep a label matched to the line it belongs to.
     for annotation in fig.layout.annotations:
         if annotation.font is None or annotation.font.color is None:
@@ -381,7 +381,7 @@ with tabs[2]:
     bar.update_yaxes(tickformat=".1%", title=f"{horizon}-day VaR")
     st.plotly_chart(
         style(bar, 380, hovermode="closest",
-              title="Same portfolio, same data — the method moves the answer"),
+              title="Same portfolio, same data, and the method moves the answer"),
         width="stretch", theme=None
     )
 
@@ -424,7 +424,7 @@ with tabs[2]:
     sim.update_xaxes(tickformat=".1%", title=f"Simulated {horizon}-day return")
     right.plotly_chart(
         style(sim, 400, hovermode="closest",
-              title=f"Monte Carlo — {mc.n_simulations:,} paths, "
+              title=f"Monte Carlo: {mc.n_simulations:,} paths, "
                     f"Student-t (v={mc.dof:.1f})"),
         width="stretch", theme=None
     )

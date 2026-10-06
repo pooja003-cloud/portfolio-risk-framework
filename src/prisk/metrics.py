@@ -1,9 +1,9 @@
 """
 Performance and risk-adjusted performance measurement.
 
-All functions take daily **simple** returns. Annualisation uses the configured
+All functions take daily simple returns and annualise on the configured
 252-day convention. Return statistics are geometric (CAGR) rather than
-arithmetic, because a compounded figure is what an investor actually earns.
+arithmetic, since a compounded figure is what an investor actually earns.
 """
 
 from __future__ import annotations
@@ -203,21 +203,19 @@ def capture_ratios(
     """
     Upside and downside capture against the benchmark.
 
-    Computed on the days when the benchmark rose (respectively fell), as the
-    ratio of the portfolio's **mean** return to the benchmark's mean return on
-    those days.
+    Taken over the days the benchmark rose (or fell), as the ratio of the
+    portfolio's mean return to the benchmark's mean return on those days.
 
-    The mean, not the compounded total, is the right aggregator here.
-    Compounding a sub-sample of several thousand non-consecutive up-days
-    produces an astronomically large number for both legs, and their ratio is
-    then dominated by floating-point scale rather than by the portfolio's
-    actual participation — it collapses towards zero for any low-beta
-    portfolio. Capture on daily data is conventionally a mean ratio for
-    exactly this reason.
+    The mean rather than the compounded total is the right aggregator here.
+    Compounding a sub-sample of several thousand non-consecutive up-days gives an
+    absurdly large number on both legs, and the ratio then reflects
+    floating-point scale instead of actual participation; it collapses towards
+    zero for any low-beta portfolio. Capture on daily data is conventionally a
+    mean ratio for this reason.
 
-    An upside capture of 0.60 with a downside capture of 0.40 means the
-    portfolio gives up 40% of the market's gains to avoid 60% of its losses —
-    an asymmetry that is the whole point of a defensive allocation.
+    Upside capture of 0.60 with downside capture of 0.40 means the portfolio gives
+    up 40% of the market's gains to avoid 60% of its losses, which is the
+    asymmetry a defensive allocation is trying to buy.
     """
     frame = pd.concat([returns.rename("p"), benchmark.rename("b")], axis=1).dropna()
 
@@ -282,7 +280,7 @@ def max_drawdown(returns: pd.Series) -> Dict[str, object]:
 
 
 def ulcer_index(returns: pd.Series) -> float:
-    """Root-mean-square drawdown — a depth-and-duration measure of pain."""
+    """Root-mean-square drawdown, so depth and duration both count."""
     dd = drawdown_series(returns)
     return float(np.sqrt((dd ** 2).mean()))
 
@@ -322,9 +320,9 @@ def risk_contributions(
     * component contribution  ``CTR_i  = w_i · MCTR_i``   (these sum to σ_p)
     * percentage contribution ``CTR_i / σ_p``
 
-    This is the key diagnostic for the difference between *capital* allocation
-    and *risk* allocation: a 5% weight in a volatile asset can carry 20% of the
-    portfolio's risk.
+    This is the diagnostic for the gap between capital allocation and risk
+    allocation. A 5% weight in a volatile asset can carry 20% of the portfolio's
+    risk.
     """
     assets = [a for a in cov.columns if a in weights.index]
     w = weights.reindex(assets).fillna(0.0).values
@@ -350,7 +348,7 @@ def risk_contributions(
     )
     # A portfolio that holds only two of the fifteen instruments leaves
     # thirteen rows at zero contribution, and without a deterministic tiebreak
-    # their order varies by platform — which makes the committed output
+    # their order varies by platform, which makes the committed output
     # irreproducible for no reason.
     table.index.name = "ticker"
     return _stable_sort(table, "pct_risk_contribution")

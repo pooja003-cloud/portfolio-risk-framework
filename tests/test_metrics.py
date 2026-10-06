@@ -82,7 +82,7 @@ def test_sortino_exceeds_sharpe_for_right_skewed_series():
     """
     Downside deviation ignores upside dispersion, so a series whose large
     moves are mostly positive must score better on Sortino than on Sharpe.
-    The series still contains losses — with none at all the downside deviation
+    The series still contains losses; with none at all the downside deviation
     is zero and Sortino is undefined.
     """
     rng = np.random.default_rng(7)

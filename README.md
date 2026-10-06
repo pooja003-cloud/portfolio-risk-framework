@@ -1,31 +1,31 @@
 # Multi-Asset Portfolio Risk and Stress-Testing Framework
 
-A Python framework for constructing multi-asset portfolios and measuring their market risk
-under normal and stressed conditions — volatility, beta, drawdown, Value at Risk by three
-independent methods, expected shortfall, Monte Carlo simulation, historical and hypothetical
-stress scenarios, and a full statistical backtest of the VaR models themselves.
+A Python framework for building multi-asset portfolios and measuring their market risk in
+normal and stressed conditions: volatility, beta, drawdown, Value at Risk by three independent
+methods, expected shortfall, Monte Carlo simulation, historical and hypothetical stress
+scenarios, and a statistical backtest of the VaR models themselves.
 
 > **Disclaimer.** Every portfolio here is a *hypothetical research construct* built from
 > publicly available price data. Nothing in this repository represents a real client account,
-> real assets under management, investment advice, or a forecast. Stress scenarios are
-> analytical assumptions chosen to probe the portfolios, not predictions about markets.
+> real assets under management, investment advice, or a forecast. The stress scenarios are
+> analytical assumptions used to probe the portfolios. They are not predictions.
 
 ---
 
 ## The question
 
-**How does portfolio construction affect return, volatility, drawdown and downside risk under
-normal and stressed market conditions — and do the standard risk models hold up when tested?**
+**How does portfolio construction affect return, volatility, drawdown and downside risk in
+normal and stressed markets, and do the standard risk models hold up when you test them?**
 
 Three portfolios are built from one universe of 15 instruments over **4,855 trading days
-(June 2007 – September 2026)**, rebalanced quarterly and net of costs, against a static 60/40
-benchmark. The construction rules are ordered by how much estimation they require, so the
-assumption-free equal-weight portfolio acts as a control.
+(June 2007 to September 2026)**, rebalanced quarterly and net of costs, against a static 60/40
+benchmark. The three construction rules are ordered by how much estimation each one needs, so
+the assumption-free equal-weight portfolio works as a control.
 
 ![Executive summary](outputs/figures/00_executive_summary.png)
 
-*One-page summary of key risks, stress outcomes and conclusions — generated from the output
-tables by `python -m prisk.pipeline`, so it cannot drift from the numbers it reports.*
+*One-page summary of key risks, stress outcomes and conclusions. It is generated from the
+output tables by `python -m prisk.pipeline`, so it can't drift from the numbers it reports.*
 
 ![Growth of $1](outputs/figures/01_growth_of_1.png)
 
@@ -40,34 +40,34 @@ tables by `python -m prisk.pipeline`, so it cannot drift from the numbers it rep
 
 ### Five findings
 
-**1. Construction relocated risk; it did not create return.** All three research portfolios
-landed within 0.02 of each other on Sharpe (0.82–0.84), across a 2.6× spread in volatility. Each beat the
-60/40 benchmark by roughly a quarter. Choosing between them is choosing a risk level, not
-buying skill.
+**1. Construction moved risk around; it didn't add return.** The three research portfolios
+came out within 0.02 of each other on Sharpe (0.82 to 0.84) across a 2.6× spread in
+volatility, and each beat the 60/40 benchmark by about a quarter. Picking between them is
+picking a risk level.
 
-**2. Capital weights are not risk weights.** In the equal-weighted portfolio the equity
-sleeve holds 54% of the capital and produces 69% of the volatility, while fixed income holds
-12% and produces 3.7%. At the asset level, contributions run from 13.4% down to effectively
-zero for the cash proxy.
+**2. Capital weights are not risk weights.** In the equal-weighted portfolio the equity sleeve
+holds 54% of the capital and produces 69% of the volatility. Fixed income holds 12% and
+produces 3.7%. At the asset level, contributions run from 13.4% down to roughly zero for the
+cash proxy.
 
 ![Risk contribution](outputs/figures/06_risk_contribution_equal_weight.png)
 
-**3. Parametric-normal VaR is rejected at 99% for every portfolio.** It breaches roughly
-twice as often as it promises — 78 exceptions against 40.8 expected for the equal-weighted
-portfolio, Kupiec p < 0.001. Excess kurtosis runs 10–19 across the portfolios; under a normal
-distribution, the equal-weight portfolio's worst day is an event that should occur once in
-the age of the universe. It occurred in March 2020.
+**3. Parametric-normal VaR is rejected at 99% for every portfolio.** It breaches about twice
+as often as it promises: 78 exceptions against 40.8 expected for the equal-weighted portfolio,
+Kupiec p < 0.001. Excess kurtosis runs between 10 and 19 across the portfolios. Under a normal
+distribution the equal-weight portfolio's worst day should happen once in the age of the
+universe. It happened in March 2020.
 
-**4. Every VaR method fails the independence test.** Exceptions cluster in 2020 and 2022,
-because none of the four methods models volatility clustering. The chart below shows the
-failure directly: the forecast is a step function that jumps *after* the crisis, not before.
+**4. Every VaR method fails the independence test.** The exceptions cluster in 2020 and 2022,
+because none of the four methods models volatility clustering. The chart shows it directly:
+the forecast is a step function that jumps *after* the crisis rather than before it.
 
 ![VaR backtest](outputs/figures/14_var_backtest_volatility_target.png)
 
-**5. Reducing one risk substitutes another.** The minimum-variance portfolio's worst drawdown
-was not the GFC — it was **2022** (−12.9%, 395 days to recover). By retreating into bonds and
-cash it sidestepped equity crises and concentrated into duration, which is what the rate
-shock attacked.
+**5. Cutting one risk substitutes another.** The minimum-variance portfolio's worst drawdown
+wasn't the GFC. It was **2022** (−12.9%, 395 days to recover). Retreating into bonds and cash
+sidestepped the equity crises and concentrated the portfolio into duration, which is what the
+rate shock hit.
 
 ![Historical stress](outputs/figures/11_stress_historical.png)
 
@@ -86,13 +86,13 @@ portfolio-risk-framework/
 │   ├── risk.py                 # historical / parametric / Monte Carlo VaR, ES, component VaR
 │   ├── stress.py               # episode replay, factor shocks, correlation stress
 │   ├── backtest.py             # Kupiec, Christoffersen, Basel traffic light
-│   ├── plots.py                # 12 chart functions on one validated palette
+│   ├── plots.py                # 13 chart functions on one validated palette
 │   └── pipeline.py             # rebuilds every table and figure from scratch
 ├── notebooks/                  # 3 executed analysis notebooks (39 charts, outputs included)
 ├── dashboard/app.py            # interactive Streamlit dashboard
 ├── reports/investment_risk_memo.md   # two-page investment-risk memo
 ├── docs/methodology.md         # full methodology and known limitations
-├── outputs/tables/             # 41 CSVs — every figure's underlying data
+├── outputs/tables/             # 41 CSVs, one per figure's underlying data
 ├── outputs/figures/            # 31 charts, incl. a one-page executive summary
 ├── tests/                      # 119 tests, including explicit no-look-ahead checks
 └── data/raw/prices_snapshot.csv  # versioned price snapshot for exact reproducibility
@@ -105,16 +105,16 @@ git clone https://github.com/pooja003-cloud/portfolio-risk-framework.git
 cd portfolio-risk-framework
 pip install -r requirements.txt
 
-# Rebuild every table and figure (~50 seconds, fully offline from the shipped snapshot)
+# Rebuild every table and figure (~50 seconds, offline from the shipped snapshot)
 PYTHONPATH=src python -m prisk.pipeline
 
 # Interactive dashboard (app.py puts src/ on the path itself)
 streamlit run dashboard/app.py
 ```
 
-`requirements.txt` holds only what the pipeline and the dashboard need, so it
-stays light enough to deploy. The notebooks, the test suite, the CVXPY solver
-and the price downloader are extras:
+`requirements.txt` holds only what the pipeline and the dashboard need, which keeps it light
+enough to deploy. The notebooks, the test suite, the CVXPY solver and the price downloader are
+extras:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -126,18 +126,16 @@ PYTHONPATH=src pytest tests -q
 PYTHONPATH=src python -m prisk.pipeline fetch --force
 ```
 
-Neither CVXPY nor yfinance is required: the minimum-variance optimiser falls
-back to SciPy's SLSQP (a unit test asserts the two solvers agree), and the
-committed price snapshot means the pipeline never needs the network.
-
-The repository ships a snapshot of the price panel, so a fresh clone reproduces every number
-above **exactly and without network access**.
+Neither CVXPY nor yfinance is required. The minimum-variance optimiser falls back to SciPy's
+SLSQP, with a unit test asserting the two solvers agree, and the committed price snapshot
+means the pipeline never needs the network. A fresh clone reproduces every number above
+exactly, offline.
 
 ## Interactive dashboard
 
 Change the confidence level, the horizon, the estimation window or the stress assumptions and
-watch the numbers move — the point being that a risk number is the output of a set of
-choices, not a fact.
+watch the numbers move. A risk number is the output of a set of choices, and the dashboard is
+the quickest way to see how much those choices matter.
 
 ![Dashboard](docs/img/dashboard_stress.png)
 
@@ -148,9 +146,9 @@ build-your-own-scenario control), VaR backtest, and allocation through time.
 
 | Notebook | Covers |
 |---|---|
-| [01 — Data and Portfolio Construction](notebooks/01_data_and_portfolio_construction.ipynb) | Provenance, cleaning, correlation stability, covariance shrinkage, the three rules, performance, drawdown anatomy, turnover |
-| [02 — Risk Measurement, VaR and ES](notebooks/02_risk_metrics_and_var.ipynb) | Rolling beta, risk contribution, distribution shape, three VaR methods and why they disagree, expected shortfall, component VaR |
-| [03 — Stress Testing and Backtesting](notebooks/03_stress_testing_and_backtesting.ipynb) | Episode replay, factor betas, hypothetical scenarios, correlation stress, Kupiec / Christoffersen / Basel |
+| [01. Data and Portfolio Construction](notebooks/01_data_and_portfolio_construction.ipynb) | Provenance, cleaning, correlation stability, covariance shrinkage, the three rules, performance, drawdown anatomy, turnover |
+| [02. Risk Measurement, VaR and ES](notebooks/02_risk_metrics_and_var.ipynb) | Rolling beta, risk contribution, distribution shape, three VaR methods and why they disagree, expected shortfall, component VaR |
+| [03. Stress Testing and Backtesting](notebooks/03_stress_testing_and_backtesting.ipynb) | Episode replay, factor betas, hypothetical scenarios, correlation stress, Kupiec / Christoffersen / Basel |
 
 All three are committed with their outputs, so they render on GitHub without being run.
 
@@ -160,53 +158,52 @@ All three are committed with their outputs, so they render on GitHub without bei
 CAT, NEE), broad equity (SPY), fixed income (AGG, TLT), commodities (DBC, GLD), REITs (VNQ),
 cash (BIL). Split- and dividend-adjusted daily closes from Yahoo Finance.
 
-**Portfolios.** Equal weight (estimates nothing); long-only minimum variance with a 25%
-position cap, solved by CVXPY with a SciPy fallback on a Ledoit-Wolf shrunk covariance
-matrix; and an 8% volatility target applied to an equal-risk-contribution growth sleeve with
-no leverage. Benchmark: static 60/40 SPY/AGG. Quarterly rebalancing, 5bp round-trip costs.
+**Portfolios.** Equal weight, which estimates nothing; long-only minimum variance with a 25%
+position cap, solved by CVXPY with a SciPy fallback on a Ledoit-Wolf shrunk covariance matrix;
+and an 8% volatility target applied to an equal-risk-contribution growth sleeve with no
+leverage. Benchmark is a static 60/40 SPY/AGG. Quarterly rebalancing, 5bp round-trip costs.
 
-**No look-ahead, enforced.** Weights applied from date *t* use only data up to *t*. A unit
-test corrupts the tail of the return panel by a factor of ten and asserts that earlier
-weights are unchanged. The same discipline and the same kind of test apply to the rolling VaR
-forecasts.
+**No look-ahead, enforced.** Weights applied from date *t* use only data up to *t*. A unit test
+corrupts the tail of the return panel by a factor of ten and asserts earlier weights are
+unchanged. The same discipline, and the same kind of test, apply to the rolling VaR forecasts.
 
-**VaR.** Historical (empirical quantile), parametric (normal, fitted Student-t, and
-Cornish-Fisher), and Monte Carlo (100,000 paths from a multivariate Student-t built as a
-normal-variance mixture, so assets crash together). All methods see the same sample, reported
-for both the full history and the trailing window.
+**VaR.** Historical (empirical quantile), parametric (normal, fitted Student-t, Cornish-Fisher),
+and Monte Carlo (100,000 paths from a multivariate Student-t built as a normal-variance
+mixture, so assets crash together). All methods see the same sample, reported for both the
+full history and the trailing window.
 
-**Stress.** Six historical episodes replayed at current weights with drifting weights, plus
-six hypothetical factor-shock scenarios propagated through multivariate regression betas, plus
-a correlation stress that holds volatilities fixed and forces pairwise correlations upward.
+**Stress.** Six historical episodes replayed at current weights, with weights allowed to drift;
+six hypothetical factor-shock scenarios propagated through multivariate regression betas; and a
+correlation stress that holds volatilities fixed and forces pairwise correlations upward.
 
 Full detail, including every known limitation: **[docs/methodology.md](docs/methodology.md)**.
 
-## Things this project gets right that are easy to get wrong
+## Things that are easy to get wrong here
 
-- **Look-ahead bias** is tested for, in both the rebalancing engine and the VaR backtest, not
-  just avoided by intention.
+- **Look-ahead bias** is tested for in both the rebalancing engine and the VaR backtest, rather
+  than just avoided by intention.
 - **The Student-t VaR uses the fitted scale**, not the sample standard deviation on top of a
   low-ν quantile. The naive version breached 11% of the time at 95% confidence.
 - **Cornish-Fisher is computed and then rejected** for this data, with the reason stated,
-  rather than quietly dropped because it gave an inconvenient answer.
-- **Basel traffic-light zones are suppressed at 95%**, where they are not defined and would
+  rather than dropped quietly because it gave an inconvenient answer.
+- **Basel traffic-light zones are suppressed at 95%**, where they aren't defined and would
   label every correctly calibrated model red.
 - **Capture ratios use mean returns**, not compounded sub-samples, which overflow into
   meaninglessness over thousands of non-consecutive days.
-- **Drawdown floors the running peak at initial capital**, so a loss on day one is not
-  silently rebased away.
-- **Every method in the VaR comparison sees the same sample**, so the table measures the
-  method rather than the window.
+- **Drawdown floors the running peak at initial capital**, so a loss on day one isn't silently
+  rebased away.
+- **Every method in the VaR comparison sees the same sample**, so the table measures the method
+  rather than the window.
 - **Covariance shrinkage is applied to the correlation matrix**, not the covariance matrix.
   Shrinking the covariance directly pulled the cash proxy's reported volatility from 0.2% to
-  4.8% — twenty times its true value — and fed that to the optimiser.
+  4.8%, twenty times its true value, and fed that number to the optimiser.
 
 ## Limitations
 
-No conditional volatility model (GARCH/EWMA) — this is the largest gap and it is what every
-failed independence test points at. The universe is survivorship-biased and chosen with
-hindsight. Costs are a flat 5bp with no market-impact modelling. Stress betas are estimated
-in calm conditions and applied to stressed ones. The sample contains one rate-shock regime.
+There is no conditional volatility model (GARCH/EWMA). That is the largest gap, and it is what
+every failed independence test points at. The universe is survivorship-biased and chosen with
+hindsight. Costs are a flat 5bp with no market-impact modelling. Stress betas are estimated in
+calm conditions and applied to stressed ones. The sample contains one rate-shock regime.
 See [docs/methodology.md](docs/methodology.md#7-known-limitations) for the full list.
 
 ## Built with

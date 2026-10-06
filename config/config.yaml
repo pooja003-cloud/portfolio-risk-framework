@@ -259,9 +259,10 @@ stress:
       description: >-
         Growth scare. Equities fall 20%; Treasuries rally 5% on a flight to
         quality; commodities soften 5% on weaker demand; REITs fall 18%,
-        tracking equities but cushioned slightly by the duration rally. Coherent
-        because the same shock drives all four legs: a downgrade to growth
-        expectations is bad for equities and real assets and good for duration.
+        tracking equities but cushioned slightly by the duration rally.
+        Coherent because the same shock drives all four legs: a downgrade to
+        growth expectations is bad for equities and real assets and good for
+        duration.
       shocks: {equity: -0.20, duration: 0.05, commodity: -0.05, real_estate: -0.18}
     - name: "Rate Shock (+200bp)"
       description: >-
@@ -282,10 +283,10 @@ stress:
       shocks: {equity: -0.10, duration: 0.06, commodity: -0.30, real_estate: -0.08}
     - name: "Volatility Spike"
       description: >-
-        Risk-off repricing with no single fundamental trigger — a positioning
+        Risk-off repricing with no single fundamental trigger, i.e. a positioning
         and liquidity event rather than a change in the outlook. Moves are
-        moderate (equities -12%, REITs -12%, commodities -10%, duration +4%) but
-        pairwise correlations converge to 0.90, so the damage comes from
+        moderate (equities -12%, REITs -12%, commodities -10%, duration +4%)
+        but pairwise correlations converge to 0.90, so the damage comes from
         diversification failing rather than from any one leg.
       shocks: {equity: -0.12, duration: 0.04, commodity: -0.10, real_estate: -0.12}
       correlation_override: 0.90
@@ -299,17 +300,17 @@ stress:
       shocks: {equity: -0.25, duration: -0.20, commodity: 0.15, real_estate: -0.22}
     - name: "Severe Combined Stress"
       description: >-
-        A forced-liquidation event, not an economic one. Equities -30%, duration
-        -25%, commodities -20%, REITs -35%, correlations at 0.95. Rates rising
-        WHILE commodities collapse is not an inflation story and would be
-        incoherent as a macro forecast; it is the signature of a dash for cash,
-        where leveraged holders sell whatever is liquid and everything falls
-        together except cash. The week of 9-20 March 2020 is the precedent:
-        equities, Treasuries and gold all sold off at once. This is also the
-        scenario where the framework's lack of any liquidity modelling bites
-        hardest, since a real liquidation event widens spreads and the losses
-        here assume none of that. Hypothetical stress assumptions, not
-        forecasts.
+        A forced-liquidation event, not an economic one. Equities -30%,
+        duration -25%, commodities -20%, REITs -35%, correlations at 0.95.
+        Rates rising WHILE commodities collapse is not an inflation story and
+        would be incoherent as a macro forecast; it is the signature of a dash
+        for cash, where leveraged holders sell whatever is liquid and
+        everything falls together except cash. The week of 9-20 March 2020 is
+        the precedent: equities, Treasuries and gold all sold off at once.
+        This is also the scenario where the framework's lack of any liquidity
+        modelling bites hardest, since a real liquidation event widens spreads
+        and the losses here assume none of that. Hypothetical stress
+        assumptions, not forecasts.
       shocks: {equity: -0.30, duration: -0.25, commodity: -0.20, real_estate: -0.35}
       correlation_override: 0.95
 

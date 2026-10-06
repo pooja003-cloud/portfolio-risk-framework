@@ -1,23 +1,22 @@
 """
 Stress testing.
 
-Two complementary families of test are implemented, because they answer
-different questions.
+Two families of test, because they answer different questions.
 
-**Historical episode replay** takes the portfolio's *current* weights and runs
-them through the actual asset returns of a named crisis. It asks: "if the
-Global Financial Crisis happened again to the book I hold today, what would
-it cost me?" Its strength is internal consistency — the cross-asset
-correlations, the volatility path and the sequencing are all real, not assumed.
-Its weakness is that it can only replay crises that have already occurred.
+Historical episode replay takes the portfolio's current weights and runs them
+through the actual asset returns of a named crisis: if the Global Financial
+Crisis happened again to the book I hold today, what would it cost? Its
+strength is internal consistency, since the cross-asset correlations, the
+volatility path and the sequencing are all real rather than assumed. Its
+weakness is that it can only replay crises that have already happened.
 
-**Hypothetical factor shocks** specify a move in a small set of risk factors
-(equity, rates, commodities, real estate) and propagate it through each asset's
-estimated factor sensitivities. It asks: "what if rates rose 200bp tomorrow?"
-Its strength is that it can express a scenario with no historical precedent;
-its weakness is that the transmission relies on betas estimated in normal
-times, which is exactly when they are least reliable. Both are reported
-side by side, and neither is a forecast.
+Hypothetical factor shocks specify a move in a small set of risk factors
+(equity, rates, commodities, real estate) and push it through each asset's
+estimated factor sensitivities: what if rates rose 200bp tomorrow? That can
+express a scenario with no historical precedent, but the transmission relies
+on betas estimated in normal times, which is when they are least reliable.
+
+Both are reported side by side. Neither is a forecast.
 """
 
 from __future__ import annotations
@@ -163,11 +162,10 @@ def estimate_factor_betas(
 
     ``r_i,t = α_i + Σ_k β_i,k · f_k,t + ε_i,t``
 
-    A multivariate rather than univariate regression matters here: SPY and VNQ
-    are highly correlated, so univariate betas would double-count the equity
-    shock. The factor proxies themselves regress to the identity by
-    construction, which is the desired behaviour — a -20% equity shock means
-    SPY falls 20%.
+    Multivariate rather than univariate matters here. SPY and VNQ are highly
+    correlated, so univariate betas would double-count the equity shock. The
+    factor proxies themselves regress to the identity by construction, which is
+    what we want: a -20% equity shock means SPY falls 20%.
     """
     cfg = cfg or load_config()
     proxies = cfg.stress["factor_proxies"]
@@ -226,14 +224,13 @@ def hypothetical_stress_table(
     """
     Run every configured hypothetical scenario against every portfolio.
 
-    Two numbers are reported per scenario. ``portfolio_impact`` is the
-    deterministic mark-to-market loss implied by propagating the factor shocks
-    through the estimated betas. ``stressed_annualised_volatility`` answers a
-    different question — what the portfolio's *ongoing* risk would look like in
-    that regime — and is computed by forcing every pairwise correlation to the
-    scenario's ``correlation_override`` while holding individual volatilities
-    fixed. Scenarios without an override report the observed-correlation
-    volatility, so the column is comparable across rows.
+    Two numbers per scenario. ``portfolio_impact`` is the deterministic
+    mark-to-market loss from pushing the factor shocks through the estimated
+    betas. ``stressed_annualised_volatility`` answers a different question, namely
+    what the portfolio's ongoing risk would look like in that regime; it forces
+    every pairwise correlation to the scenario's ``correlation_override`` while
+    holding individual volatilities fixed. Scenarios with no override report the
+    observed-correlation volatility, so the column stays comparable across rows.
     """
     cfg = cfg or load_config()
     betas = estimate_factor_betas(asset_returns, cfg)

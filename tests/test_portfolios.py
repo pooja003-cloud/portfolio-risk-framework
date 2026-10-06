@@ -226,7 +226,7 @@ def _correlation(cov: pd.DataFrame) -> np.ndarray:
 
 def test_ledoit_wolf_shrinks_the_correlation_spectrum(synthetic_returns, cfg):
     """
-    Shrinkage must compress the eigenvalue spread of the *correlation* matrix —
+    Shrinkage must compress the eigenvalue spread of the *correlation* matrix,
     that is where the estimation noise lives, and it is what the estimator
     targets. The covariance matrix's own conditioning is dominated by the
     four-orders-of-magnitude spread in variances between cash and equities,

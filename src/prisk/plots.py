@@ -1,23 +1,23 @@
 """
 Visualisation layer.
 
-Every figure in this project is produced here, from one style definition, so
-that the whole report reads as a single system rather than a dozen defaults.
+Every figure in the project comes from here, off one style definition, so the
+report reads as one thing rather than a dozen library defaults.
 
-Design rules applied throughout
--------------------------------
-* **Colour follows the entity, not its rank.** Each portfolio keeps the same
-  hue in every chart; the benchmark is always the neutral dashed reference
-  line, because it is a reference rather than a competing series.
-* **Categorical hues are assigned in a fixed, colour-vision-deficiency-safe
-  order** (validated for adjacent-pair and all-pair separation), never cycled.
-* **One axis.** No chart in this module has two y-scales.
-* **Sequential means one hue; diverging means two hues around a neutral grey.**
-  The correlation heatmap is diverging because -1 and +1 are opposites and zero
-  is genuinely "nothing".
-* Identity is never carried by colour alone: every multi-series chart has a
-  legend, key charts carry direct labels, and the underlying table of every
-  figure is written to ``outputs/tables`` as CSV.
+The rules applied throughout:
+
+* Colour follows the entity, not its rank. Each portfolio keeps the same hue in
+  every chart, and the benchmark is always the neutral dashed line, because it
+  is a reference rather than a competing series.
+* Categorical hues come from a fixed order checked for colour-vision-deficiency
+  separation on adjacent pairs and all pairs, never cycled.
+* One axis. No chart in this module has two y-scales.
+* Sequential scales use one hue; diverging scales use two around a neutral
+  grey. The correlation heatmap is diverging because -1 and +1 are opposites
+  and zero really is nothing.
+* Identity never rests on colour alone. Every multi-series chart has a legend,
+  the key charts carry direct labels, and the table behind each figure is
+  written to ``outputs/tables`` as CSV.
 """
 
 from __future__ import annotations
@@ -276,7 +276,7 @@ def plot_rolling_volatility(
 
     ax.yaxis.set_major_formatter(_pct(0))
     _title(ax, f"Rolling {window}-day annualised volatility",
-           "Risk is not a constant — every portfolio's own volatility moves by a factor of three or more")
+           "Risk is not a constant: every portfolio's own volatility moves by a factor of three or more")
     ax.legend(loc="upper left", ncols=2)
     fig.tight_layout()
     return fig
@@ -361,7 +361,7 @@ def plot_risk_contribution(
     Paired horizontal bars: capital weight against percentage risk
     contribution.
 
-    The gap between the two bars is the whole point of the chart — an asset
+    The gap between the two bars is what the chart is for: an asset
     whose risk bar runs well past its weight bar is consuming risk budget out
     of proportion to the capital committed to it.
     """
@@ -512,7 +512,7 @@ def plot_var_comparison(
     ax.yaxis.set_major_formatter(_pct(1))
     ax.set_ylabel(f"{horizon}-day VaR (loss)")
     _title(ax, f"{horizon}-day Value at Risk by estimation method",
-           "Same portfolio, same data — the method itself moves the answer")
+           "Same portfolio, same data, and the method itself moves the answer")
     ax.legend(loc="upper left", ncols=2)
     ax.margins(y=0.18)
     fig.tight_layout()
@@ -546,7 +546,7 @@ def plot_var_backtest(
 
     ax.axhline(0, color=BASELINE, linewidth=0.9)
     ax.yaxis.set_major_formatter(_pct(0))
-    _title(ax, f"VaR backtest — {method.replace('_', ' ')} method at {confidence:.0%}",
+    _title(ax, f"VaR backtest: {method.replace('_', ' ')} method at {confidence:.0%}",
            "Every red dot is a day the model said should have been rarer than it was")
     ax.legend(loc="lower left", ncols=3)
     fig.tight_layout()
@@ -704,7 +704,7 @@ def plot_executive_summary(
     """
     One-page summary: key risks, stress outcomes, and what follows from them.
 
-    Built for the reader who will not open the repository — a hiring manager,
+    Built for the reader who will not open the repo: a hiring manager,
     an interviewer, or a risk committee seeing the work for ninety seconds. It
     carries the three things such a reader needs: how much risk each portfolio
     runs, what happens to it under stress, and what the analysis concludes.
@@ -764,7 +764,7 @@ def plot_executive_summary(
     ax.grid(axis="y", visible=False)
     ax.margins(x=0.16)
     _title(ax, "How much risk each portfolio runs",
-           "Three risk measures on one scale — dispersion, worst path, and tail")
+           "Three risk measures on one scale: dispersion, worst path, and tail")
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.11), ncols=3, fontsize=9)
 
     # -- Panel 2: stress outcomes -------------------------------------------
@@ -833,11 +833,11 @@ def plot_executive_summary(
          "(Kupiec p < 0.001). Expected shortfall is the number to manage against: the average "
          "breach runs 40%+ worse than the threshold."),
         ("Reducing one exposure concentrates another.",
-         "The minimum-variance portfolio's worst drawdown was 2022, not 2008 — retreating into "
+         "The minimum-variance portfolio's worst drawdown was 2022, not 2008. Retreating into "
          "bonds substituted duration risk for equity risk. Forcing correlations to 0.95 raises "
          "volatility 2.2x."),
         ("The models fail where it matters most.",
-         "Every method failed the independence test — breaches cluster in 2020 and 2022, because "
+         "Every method failed the independence test. Breaches cluster in 2020 and 2022, because "
          "none models volatility clustering. GARCH/EWMA is the first extension to build."),
     ]
 

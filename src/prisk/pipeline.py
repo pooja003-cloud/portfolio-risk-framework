@@ -1,8 +1,8 @@
 """
 End-to-end pipeline.
 
-Rebuilds every table and figure in the repository from the price panel, so
-that no published number is the product of an un-rerunnable notebook cell.
+Rebuilds every table and figure in the repo from the price panel, so no
+published number depends on a notebook cell nobody can re-run.
 
 Usage
 -----

@@ -1,24 +1,21 @@
 """
 Portfolio construction and the rebalancing backtest engine.
 
-Three research portfolios plus a benchmark are built on exactly the same
-mechanics, so that differences in their results come from the allocation rule
-alone:
+Three research portfolios and a benchmark, all run through the same mechanics
+so any difference in their results comes from the allocation rule:
 
-1. **Equal weight** — 1/N across every holding.
-2. **Minimum variance** — long-only global minimum-variance portfolio with a
-   box constraint, solved on a shrunk covariance matrix.
-3. **Volatility target** — an equal-risk-contribution growth sleeve scaled so
-   that its forecast volatility equals the target, with the residual in cash.
-4. **Benchmark** — static 60% SPY / 40% AGG.
+1. Equal weight: 1/N across every holding.
+2. Minimum variance: long-only global minimum variance with a box constraint,
+   solved on a shrunk covariance matrix.
+3. Volatility target: an equal-risk-contribution growth sleeve scaled so its
+   forecast volatility hits the target, with the remainder in cash.
+4. Benchmark: static 60% SPY / 40% AGG.
 
-No-look-ahead discipline
-------------------------
-Weights applied from rebalance date *t* onwards are estimated **only** from
-returns up to and including *t*. Between rebalance dates weights drift with
-realised performance; they are reset at the next rebalance. Turnover is
-measured against the drifted weights, and transaction costs are charged on the
-day of the trade.
+On look-ahead. Weights applied from rebalance date t onwards are estimated only
+from returns up to and including t. Between rebalances the weights drift with
+realised performance and are reset at the next rebalance. Turnover is measured
+against the drifted weights, and transaction costs are charged on the day of
+the trade.
 """
 
 from __future__ import annotations
@@ -43,25 +40,24 @@ def estimate_covariance(
     """
     Estimate the return covariance matrix.
 
-    ``ledoit_wolf`` shrinks towards a scaled identity. With 15 assets and a
-    756-day window the sample estimator is usable but noisy in its smallest
-    eigenvalues, which is precisely where a minimum-variance optimiser
-    concentrates weight; shrinkage is the standard remedy and materially
-    stabilises the optimised weights.
+    ``ledoit_wolf`` shrinks towards a scaled identity. With 15 assets and a 756-day
+    window the sample estimator is usable but noisy in its smallest eigenvalues,
+    which is where a minimum-variance optimiser puts its weight. Shrinkage is the
+    standard fix and it noticeably stabilises the optimised weights.
 
-    **Shrinkage is applied to the correlation matrix, not to the covariance
-    matrix.** This matters a great deal for a multi-asset universe. Shrinking
-    the covariance matrix directly pulls every variance towards the *average*
-    variance, and the variances here span four orders of magnitude — a T-bill
-    ETF at 0.5% annualised volatility sits alongside an industrial equity at
-    32%. Applied naively, shrinkage reported the cash sleeve at roughly 4.8%
-    volatility, nearly ten times its true value, and handed that inflated
-    number to the optimiser and to every risk-contribution table.
+    Note that the shrinkage is applied to the correlation matrix, not to the
+    covariance matrix. That distinction matters in a multi-asset universe.
+    Shrinking the covariance directly pulls every variance towards the average
+    variance, and the variances here span four orders of magnitude: a T-bill ETF
+    at 0.2% annualised volatility sits in the same matrix as an industrial equity
+    at 32%. Done that way, shrinkage reported the cash sleeve at roughly 4.8%
+    volatility, nearly twenty times its true value, and handed that number to the
+    optimiser and to every risk-contribution table.
 
-    Standardising first, shrinking the correlation matrix, and rescaling by the
-    sample standard deviations preserves each asset's own volatility exactly
-    while still regularising the correlation structure — which is where the
-    estimation noise actually lives.
+    Standardising first, shrinking the correlation matrix, then rescaling by the
+    sample standard deviations leaves each asset's own volatility untouched while
+    still regularising the correlation structure, which is where the estimation
+    noise actually lives.
     """
     clean = returns.dropna(how="any")
     if method == "ledoit_wolf":
@@ -235,7 +231,7 @@ def volatility_target_rule(window: pd.DataFrame, cfg: Config) -> pd.Series:
     volatility and ``σ*`` the target. The sleeve is held at
     ``k = clip(σ* / σ_g, k_min, k_max)`` and ``1 - k`` sits in cash. With
     ``k_max = 1`` no leverage is used, so in calm regimes the realised
-    volatility can sit below target — a deliberate, documented asymmetry.
+    volatility can sit below target, which is deliberate rather than accidental.
     """
     spec = cfg.portfolios["volatility_target"]
     cash = cfg.riskfree_ticker
@@ -309,7 +305,7 @@ class BacktestResult:
 
     @property
     def returns(self) -> pd.Series:
-        """Net-of-cost returns — the series every risk statistic is built on."""
+        """Net-of-cost returns, the series every risk statistic is built on."""
         return self.returns_net
 
     @property

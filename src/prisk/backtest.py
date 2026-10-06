@@ -2,19 +2,20 @@
 VaR backtesting.
 
 A VaR model is a falsifiable forecast: at 99% confidence, losses should exceed
-the one-day VaR on about 1% of days. Backtesting checks two things, and both
-matter:
+the one-day VaR on roughly 1% of days. Two things get tested here and both
+matter.
 
-* **Unconditional coverage** — is the *number* of exceptions right? Tested with
-  Kupiec's proportion-of-failures likelihood-ratio test.
-* **Independence** — are the exceptions *spread out*, or do they cluster? A
-  model can have exactly the right exception count and still be useless if all
-  the breaches arrive in the same fortnight, because that is precisely when the
-  capital is needed. Tested with Christoffersen's Markov independence test, and
-  the two are combined into the conditional-coverage test.
+Unconditional coverage asks whether the number of exceptions is right, using
+Kupiec's proportion-of-failures likelihood-ratio test.
 
-The Basel traffic-light zones are also reported: they are the supervisory
-standard for judging a 99% one-day model over a 250-day window.
+Independence asks whether the exceptions are spread out or clustered, using
+Christoffersen's Markov test. A model can have exactly the right exception
+count and still be useless if every breach lands in the same fortnight, which
+is when the capital is needed. The two tests combine into the
+conditional-coverage test.
+
+Basel traffic-light zones are reported too. They are the supervisory standard
+for judging a 99% one-day model over a 250-day window.
 """
 
 from __future__ import annotations
@@ -46,22 +47,19 @@ def rolling_var_forecast(
     """
     One-day-ahead VaR forecast for each date, estimated on the trailing window.
 
-    Critically, the forecast for day *t* uses only returns up to *t-1*. The
-    series is therefore directly comparable with the realised return on day
-    *t*, with no look-ahead.
+    The forecast for day t uses only returns up to t-1, so the series lines up
+    directly against the realised return on day t with no look-ahead.
 
     Parameters
     ----------
     method : {"historical", "normal", "student_t", "cornish_fisher"}
     refit_every : int
-        The Student-t shape is re-fitted by maximum likelihood every
-        ``refit_every`` days rather than daily; the *scale* still updates every
-        day. Concretely, a refit produces both the degrees of freedom ν and the
-        ratio of the fitted scale to the window standard deviation, and those
-        two shape parameters are held until the next refit while the rolling
-        standard deviation moves daily. A one-day change in a 500-day window
-        moves the MLE by a negligible amount, and daily refitting makes a
-        twenty-year backtest an order of magnitude slower for no gain.
+        How often the Student-t shape is re-fitted by maximum likelihood. A refit
+        produces the degrees of freedom and the ratio of fitted scale to window
+        standard deviation; both are held until the next refit while the rolling
+        standard deviation keeps updating daily. A one-day change in a 500-day
+        window barely moves the MLE, and refitting every day makes a twenty-year
+        backtest an order of magnitude slower for nothing.
     """
     clean = returns.dropna()
     values = clean.values.astype(float)
@@ -169,7 +167,7 @@ def christoffersen_independence_test(exceptions: pd.Series) -> Dict:
     Christoffersen Markov test for independence of exceptions.
 
     Counts the transitions ``n_ij`` between the no-exception (0) and exception
-    (1) states and tests ``H0: π_01 = π_11`` — that an exception today tells
+    (1) states and tests ``H0: π_01 = π_11``, i.e. that an exception today tells
     you nothing about tomorrow. Rejection means the breaches cluster, the
     classic symptom of a model that ignores volatility clustering.
     """
@@ -234,16 +232,15 @@ def basel_traffic_light(
     """
     Basel Committee traffic-light zone for a 99% one-day VaR model.
 
-    Over 250 observations: 0-4 exceptions is green (the model is accepted),
-    5-9 is yellow (a capital multiplier applies and the bank must explain
-    itself), 10 or more is red (the model is presumed flawed).
+    Over 250 observations: 0-4 exceptions is green and the model is accepted,
+    5-9 is yellow (a capital multiplier applies and the bank has to explain
+    itself), 10 or more is red and the model is presumed flawed.
 
-    The zones are defined **only** for a 99% model; applying them to a 95%
-    model, whose expected exception count over 250 days is 12.5, would label
-    every correctly calibrated model red. Other confidence levels therefore
-    return ``"n/a"``. Counts are scaled proportionally when the sample is
-    longer than 250 days, so a twenty-year backtest is judged on its average
-    250-day behaviour.
+    The zones only apply to a 99% model. At 95%, where the expected exception
+    count over 250 days is 12.5, they would label every correctly calibrated
+    model red, so other confidence levels return ``"n/a"``. Counts are scaled
+    proportionally for samples longer than 250 days, so a twenty-year backtest
+    is judged on its average 250-day behaviour.
     """
     if abs(confidence - 0.99) > 1e-9:
         return {

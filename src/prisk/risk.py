@@ -1,27 +1,27 @@
 """
-Value at Risk, Expected Shortfall, and Monte Carlo simulation.
+Value at Risk, Expected Shortfall and Monte Carlo simulation.
 
-Sign convention
----------------
-VaR and ES are reported as **positive numbers representing losses**. A 1-day
-99% VaR of 0.0231 means: on 99 days out of 100 the portfolio is not expected to
-lose more than 2.31% of its value in one day.
+Sign convention: VaR and ES are reported as positive numbers representing
+losses. A 1-day 99% VaR of 0.0231 means that on 99 days out of 100 the
+portfolio is not expected to lose more than 2.31% of its value in a day.
 
 Three estimation routes are implemented, and they disagree for reasons worth
-stating explicitly:
+spelling out.
 
-* **Historical** makes no distributional assumption. It reproduces the actual
-  fat tails, skew, and volatility clustering of the sample, but it can only
-  produce losses that have already happened, and it weights a 2008 observation
-  the same as yesterday's.
-* **Parametric** assumes a distribution and needs only a mean and a covariance.
-  Under a normal assumption it systematically understates tail risk for daily
-  equity-like returns, whose excess kurtosis is large and positive. A Student-t
-  fit and a Cornish-Fisher expansion are provided as tail-aware alternatives.
-* **Monte Carlo** re-samples from an assumed multivariate process. It is the
-  most flexible — it can price horizons and portfolios with no history — but
-  its output is only as good as the covariance matrix and the distributional
-  family fed into it.
+Historical makes no distributional assumption. It reproduces the sample's
+actual fat tails, skew and volatility clustering, but it can only produce
+losses that have already happened, and it weights a 2008 observation the same
+as yesterday's.
+
+Parametric assumes a distribution and needs only a mean and a covariance.
+Under a normal assumption it understates tail risk for daily equity-like
+returns, whose excess kurtosis is large and positive. A Student-t fit and a
+Cornish-Fisher expansion are there as tail-aware alternatives.
+
+Monte Carlo re-samples from an assumed multivariate process. It is the most
+flexible of the three, since it can handle horizons and portfolios with no
+history, but its output is only as good as the covariance matrix and the
+distributional family fed into it.
 """
 
 from __future__ import annotations
@@ -80,7 +80,7 @@ def historical_expected_shortfall(
     """
     Historical Expected Shortfall (Conditional VaR).
 
-    The average loss on the days that breached VaR — the answer to "how bad is
+    The average loss on the days that breached VaR, i.e. the answer to "how bad is
     bad?", which VaR alone never gives. Unlike VaR, ES is a coherent risk
     measure: it is sub-additive, so diversification can never increase it.
     """
@@ -111,21 +111,21 @@ def parametric_var(
         ``VaR = -(μ·h + z_(1-c)·σ·sqrt(h))`` with ``z`` the standard normal
         quantile.
     ``student_t``
-        A Student-t is fitted by maximum likelihood and the VaR is read
-        directly off the fitted location and scale:
+        A Student-t is fitted by maximum likelihood and the VaR read straight off
+        the fitted location and scale:
         ``VaR = -(μ̂·h + ν-quantile · ŝ · sqrt(h))``.
 
-        Using the *fitted* scale rather than the sample standard deviation
-        matters. Maximum likelihood down-weights outliers when it estimates ŝ
-        and pushes the fat tail into a low ν instead; re-imposing the sample
-        σ on top of a low-ν quantile double-counts the scale and produces a
-        VaR that is far too small. The backtest in ``backtest.py`` makes the
-        difference visible — the naive version breaches several times more
-        often than its confidence level allows.
+        Using the fitted scale rather than the sample standard deviation matters.
+        Maximum likelihood down-weights outliers when it estimates the scale and
+        pushes the fat tail into a low ν instead, so re-imposing the sample σ on
+        top of a low-ν quantile double-counts the scale and gives a VaR that is
+        much too small. The backtest in ``backtest.py`` shows it: the naive
+        version breaches several times more often than its confidence level
+        allows.
 
-    Note that a Student-t does not always give a *larger* VaR than a normal.
-    Standardised for scale, the t has thinner shoulders and a fatter extreme
-    tail, so it typically sits below the normal at 95% and above it at 99%.
+    A Student-t does not always give a larger VaR than a normal. Standardised for
+    scale, the t has thinner shoulders and a fatter extreme tail, so it usually
+    sits below the normal at 95% and above it at 99%.
     """
     clean = returns.dropna()
     if clean.empty:
@@ -263,22 +263,21 @@ def monte_carlo_var(
     """
     Monte Carlo VaR and ES from a simulated multivariate return process.
 
-    Method
-    ------
+    Steps:
+
     1. Estimate the mean vector ``μ`` and covariance matrix ``Σ`` of the asset
-       returns (a shrunk ``Σ`` may be supplied).
-    2. Draw ``n_simulations`` paths of ``horizon`` daily joint return vectors
-       from a multivariate normal or a multivariate Student-t built from the
-       Cholesky factor of ``Σ``. The Student-t is generated as a normal-variance
-       mixture, ``x = μ + L·z·sqrt(ν/χ²_ν)``, which preserves the correlation
-       structure while producing joint tail events far more often than a normal
-       — the empirically relevant behaviour, since assets crash together.
+       returns (a shrunk ``Σ`` can be supplied instead).
+    2. Draw ``n_simulations`` paths of ``horizon`` daily joint return vectors from
+       a multivariate normal or a multivariate Student-t built off the Cholesky
+       factor of ``Σ``. The Student-t is generated as a normal-variance mixture,
+       ``x = μ + L·z·sqrt(ν/χ²_ν)``, which keeps the correlation structure while
+       producing joint tail events far more often than a normal would. Assets
+       crash together, and that is the behaviour that matters here.
     3. Compound each path at fixed weights and read the quantiles off the
        resulting distribution of horizon returns.
 
-    Fixed weights are the correct convention for a risk measure: they answer
-    "what could this portfolio lose", not "what could a rebalancing strategy
-    lose".
+    Fixed weights are the right convention for a risk measure. They answer "what
+    could this portfolio lose", not "what could a rebalancing strategy lose".
     """
     assets = [a for a in asset_returns.columns if a in weights.index]
     data = asset_returns[assets].dropna(how="any")
@@ -362,14 +361,14 @@ def component_var(
     """
     Decompose parametric VaR into per-asset contributions.
 
-    Because VaR is homogeneous of degree one in the weights, Euler's theorem
-    gives an exact additive decomposition:
+    VaR is homogeneous of degree one in the weights, so Euler's theorem gives an
+    exact additive decomposition:
 
     ``VaR = Σ_i w_i · ∂VaR/∂w_i``
 
-    ``component_var`` columns therefore sum to the portfolio VaR. This is the
-    number that answers "where is my loss potential concentrated?" — and it can
-    look very different from the capital allocation.
+    The ``component_var`` column therefore sums to the portfolio VaR. It answers
+    where the loss potential is concentrated, and it can look very different from
+    the capital allocation.
     """
     assets = [a for a in cov.columns if a in weights.index]
     w = weights.reindex(assets).fillna(0.0).values

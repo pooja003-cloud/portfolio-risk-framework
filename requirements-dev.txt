@@ -6,13 +6,13 @@
 # These are kept out of requirements.txt because that file is what Streamlit
 # Community Cloud installs. CVXPY in particular can take several minutes to
 # resolve and occasionally fails to build, which would take the deployment
-# down with it — and the project does not need it: the minimum-variance
+# down with it, and the project does not need it. The minimum-variance
 # optimiser falls back to SciPy's SLSQP automatically, and a unit test asserts
 # the two solvers agree.
 
 -r requirements.txt
 
-# Price data refresh — optional. The repository ships a snapshot at
+# Price data refresh, optional. The repository ships a snapshot at
 # data/raw/prices_snapshot.csv, so the pipeline runs offline without this.
 yfinance>=0.2.40
 

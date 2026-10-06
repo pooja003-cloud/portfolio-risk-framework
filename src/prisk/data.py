@@ -1,36 +1,30 @@
 """
 Data acquisition and cleaning.
 
-Responsibilities
-----------------
-1. Download daily split- and dividend-adjusted closing prices for the
-   configured universe from Yahoo Finance (via ``yfinance``) and cache one CSV
-   per ticker under ``data/raw/``.
-2. Align those series onto a single trading calendar, apply the documented
-   missing-data policy, and persist a consolidated price panel and return
-   panel under ``data/processed/``.
-3. Emit a data-quality report so that every cleaning decision is auditable.
+Three jobs: download daily split- and dividend-adjusted closes for the
+configured universe from Yahoo Finance via ``yfinance``, caching one CSV per
+ticker under ``data/raw/``; align those series onto a single trading calendar,
+apply the missing-data policy below, and write the consolidated price and
+return panels to ``data/processed/``; and emit a data-quality report so the
+cleaning decisions are auditable.
 
-Reproducibility
----------------
-Vendors revise history. To keep every published number rebuildable, the
-repository ships a **snapshot** of the consolidated adjusted-close panel at
-``data/raw/prices_snapshot.csv``. If no per-ticker cache is present, the loader
-reads the snapshot rather than hitting the network, so a fresh clone reproduces
-the results in the README exactly. Passing ``force=True`` (or running
+Vendors revise history, so the repo ships a snapshot of the consolidated
+adjusted-close panel at ``data/raw/prices_snapshot.csv``. With no per-ticker
+cache present the loader reads the snapshot instead of hitting the network, so
+a fresh clone reproduces the README numbers exactly. ``force=True`` (or
 ``python -m prisk.pipeline fetch --force``) re-downloads from Yahoo Finance and
-rewrites the caches, which is the right thing to do when extending the sample.
+rewrites the caches, which is what you want when extending the sample.
 
-Missing-data policy (also documented in ``config/config.yaml``)
---------------------------------------------------------------
-* The trading calendar is the set of dates on which the market proxy (SPY)
-  traded, restricted to the configured sample window. This avoids creating
-  phantom zero-return days from foreign or bond-market holidays.
+Missing-data policy, also recorded in ``config/config.yaml``:
+
+* The trading calendar is the set of dates SPY traded on, restricted to the
+  configured sample window. Using the union of all tickers' dates would create
+  phantom zero-return days from foreign and bond-market holidays.
 * Interior gaps are forward-filled for at most ``max_ffill_days`` sessions. A
-  stale price implies a zero return, which is the economically correct
-  treatment for a non-trading day.
+  stale price implies a zero return, which is the right treatment for a
+  non-trading day.
 * Dates still missing any ticker after forward-filling are dropped.
-* Back-filling is never performed: it would inject look-ahead bias.
+* Nothing is ever back-filled. That would inject look-ahead bias.
 """
 
 from __future__ import annotations
@@ -262,7 +256,7 @@ def quality_report(
     n_filled            : observations created by forward-filling.
     pct_filled          : those fills as a share of the final panel.
     n_final             : observations surviving into the clean panel.
-    n_zero_returns      : zero-return days (a stale-price diagnostic).
+    n_zero_returns      : zero-return days, a stale-price diagnostic.
     """
     rows = []
     for ticker in before.columns:
