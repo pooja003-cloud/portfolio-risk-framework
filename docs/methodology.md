@@ -419,3 +419,11 @@ practice, and are recorded here rather than quietly left out.
   volatility persistence, so a 10-day horizon is effectively ten independent shocks. This
   understates the probability of a sustained drawdown, and is the same gap the independence
   test exposes from the other direction.
+- **The stress factor set has four factors and omits three obvious ones.** Equity, duration,
+  commodity and real estate cover the sleeves actually held, but there is no **credit-spread**
+  factor (so a high-yield blowout cannot be expressed independently of equities), no **FX**
+  factor (irrelevant to this all-USD universe, but a real gap the moment it is extended), and
+  no **inflation/breakeven** factor (so the stagflation scenario has to be expressed as a
+  combination of equity and duration shocks rather than directly). Equity style factors
+  (size, value, momentum) are also absent, which is defensible at portfolio level but would
+  matter for attribution of the single-name sleeve.
