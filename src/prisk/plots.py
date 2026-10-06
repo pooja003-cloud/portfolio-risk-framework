@@ -837,8 +837,8 @@ def plot_executive_summary(
          "bonds substituted duration risk for equity risk. Forcing correlations to 0.95 raises "
          "volatility 2.2x."),
         ("The models fail where it matters most.",
-         "Every method failed the independence test. Breaches cluster in 2020 and 2022, because "
-         "none models volatility clustering. GARCH/EWMA is the first extension to build."),
+         "31 of 32 backtests failed the independence test. Breaches cluster in 2020 and 2022, "
+         "because no method models volatility clustering. GARCH/EWMA is the first extension."),
     ]
 
     for i, (headline, body) in enumerate(points):

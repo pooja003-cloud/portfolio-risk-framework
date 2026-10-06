@@ -60,10 +60,13 @@ Kupiec p < 0.001. Excess kurtosis runs between 10 and 19 across the portfolios. 
 distribution the equal-weight portfolio's worst day should happen once in the age of the
 universe. It happened in March 2020.
 
-**4. Every VaR method fails the independence test.** Across about 4,080 rolling one-day
-forecasts per portfolio (500-day window), the exceptions cluster in 2020 and 2022,
-because none of the four methods models volatility clustering. The chart shows it directly:
-the forecast is a step function that jumps *after* the crisis rather than before it.
+**4. VaR breaches cluster.** Across about 4,080 rolling one-day forecasts per portfolio
+(500-day window), 31 of the 32 backtests (4 methods × 4 portfolios × 2 confidence levels) fail
+the independence test, because the exceptions bunch up in 2020 and 2022 and none of the four
+methods models volatility clustering. The one pass, Student-t at 99% on minimum variance,
+breached only 19 times against 40.8 expected and fails the count test instead. The chart shows
+the problem directly: the forecast is a step function that jumps *after* the crisis rather than
+before it.
 
 ![VaR backtest](outputs/figures/14_var_backtest_volatility_target.png)
 

@@ -142,8 +142,10 @@ often as it promises (78 against 40.8 for equal weight; 91 for the 60/40 benchma
 lands it in the Basel yellow zone). This turns "fat tails matter" from an assertion into a
 rejected null hypothesis.
 
-**Every method fails the independence test.** The exceptions cluster: 2020 and 2022 absorb a
-disproportionate share of all breaches. None of the four methods models volatility clustering;
+**31 of 32 backtests fail the independence test** (4 methods × 4 portfolios × 2 confidence
+levels). The exceptions cluster: 2020 and 2022 absorb a disproportionate share of all breaches.
+The single pass, Student-t at 99% on minimum variance (p = 0.08), is not a good result either:
+it breached only 19 times against 40.8 expected and fails Kupiec as too conservative. None of the four methods models volatility clustering;
 all of them assume the distribution is stable across the estimation window. A model that is
 right on average and wrong when it matters can't be used to size positions. Average breach
 severity runs 1.35 to 1.74 across the methods, so when they are wrong the realised loss is
@@ -186,7 +188,8 @@ static book, is in `docs/methodology.md`.
 2. All three beat a static 60/40 on both Sharpe and drawdown, and the benchmark's weakness
    was concentrated in the one regime where its core diversification assumption failed.
 3. Normal-distribution VaR should not be used on this data. The empirical and Student-t
-   estimates are defensible on count; none of them is defensible on clustering.
+   estimates are defensible on count; none of them holds up on clustering (31 of 32
+   backtests fail the independence test).
 4. Expected shortfall, not VaR, is the right headline tail measure here. It is coherent, and
    it reflects a breach distribution 40%+ worse than the breach threshold.
 5. Any risk statement from this framework should carry the regime it was estimated in.
