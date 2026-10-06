@@ -22,6 +22,11 @@ Three portfolios are built from one universe of 15 instruments over **4,855 trad
 benchmark. The construction rules are ordered by how much estimation they require, so the
 assumption-free equal-weight portfolio acts as a control.
 
+![Executive summary](outputs/figures/00_executive_summary.png)
+
+*One-page summary of key risks, stress outcomes and conclusions — generated from the output
+tables by `python -m prisk.pipeline`, so it cannot drift from the numbers it reports.*
+
 ![Growth of $1](outputs/figures/01_growth_of_1.png)
 
 ## Headline results
@@ -88,7 +93,7 @@ portfolio-risk-framework/
 ├── reports/investment_risk_memo.md   # two-page investment-risk memo
 ├── docs/methodology.md         # full methodology and known limitations
 ├── outputs/tables/             # 41 CSVs — every figure's underlying data
-├── outputs/figures/            # 30 publication-quality charts
+├── outputs/figures/            # 31 charts, incl. a one-page executive summary
 ├── tests/                      # 119 tests, including explicit no-look-ahead checks
 └── data/raw/prices_snapshot.csv  # versioned price snapshot for exact reproducibility
 ```

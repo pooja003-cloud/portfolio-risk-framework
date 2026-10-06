@@ -170,6 +170,15 @@ model too conservative for the following two years.
   of the two optimised portfolios would begin to tighten.
 - **The Monte Carlo Student-t fit floors ν at 3.** The unfloored fit indicates a mixture of
   volatility regimes rather than a single fat-tailed distribution.
+- **Expected shortfall is reported but not backtested.** VaR is falsifiable through its
+  exception count; no ES-specific test is run.
+- **No liquidity dimension.** Costs are a flat 5bp and no scenario widens spreads or assumes a
+  position cannot be exited — real stress episodes are liquidity events too.
+- **The correlation stress holds volatilities fixed**, so the 2.2x figure is a floor: in 2008
+  and 2020 correlations and volatilities rose together.
+
+A fuller methodology review, including why the VaR backtest measures a strategy rather than a
+static book, is in `docs/methodology.md`.
 
 ## 7. Conclusions
 

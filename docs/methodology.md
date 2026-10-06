@@ -391,3 +391,31 @@ value well above 1 says that when the model is wrong, it is badly wrong.
 - **In-sample optimisation of the *rules*.** The rebalance frequency, estimation window and
   box constraint were not themselves tuned, but they were chosen by a person who knows what
   happened in 2008, 2020 and 2022.
+
+### Raised by a methodology review
+
+The following were identified by reviewing this framework against standard market-risk
+practice, and are recorded here rather than quietly left out.
+
+- **Expected shortfall is reported but never backtested.** VaR is falsifiable through its
+  exception count; ES is not, and no ES-specific test (Acerbi-Székely, or an elicitability-based
+  alternative) is run. Every claim made here about ES rests on the historical distribution being
+  representative, which the independence test results give reason to doubt.
+- **The VaR backtest runs on the strategy's returns, not a fixed book.** The portfolio drifts
+  between quarterly rebalances and is reset at each one, so the series being tested is a
+  *strategy*, not a static position. A desk-level backtest would hold weights fixed over the
+  test window. The distinction is small here — turnover is 10-29% a year — but it means the
+  exception counts mix model error with allocation changes.
+- **No liquidity dimension anywhere.** Position sizes are notional fractions, costs are a flat
+  5bp, and no scenario widens spreads or assumes a position cannot be exited. Real stress
+  episodes are liquidity events as much as price events; a portfolio holding single-name
+  equities and a commodity ETF would face materially worse execution in the scenarios modelled
+  here than the figures imply.
+- **The correlation stress understates a real crisis.** It raises pairwise correlations while
+  holding individual volatilities fixed, which isolates the diversification effect cleanly but
+  is not what happens: in 2008 and 2020 correlations *and* volatilities rose together. The
+  reported 2.2x volatility increase is therefore a floor, not a central estimate.
+- **Monte Carlo draws are independent across days.** The simulation has no autocorrelation or
+  volatility persistence, so a 10-day horizon is effectively ten independent shocks. This
+  understates the probability of a sustained drawdown, and is the same gap the independence
+  test exposes from the other direction.

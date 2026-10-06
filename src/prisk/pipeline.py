@@ -491,6 +491,36 @@ def stage_backtest(
     return summary
 
 
+def stage_summary_slide(
+    cfg: Config,
+    summary: pd.DataFrame,
+    comparisons: Dict[str, pd.DataFrame],
+) -> None:
+    """Build the one-page executive summary from the generated tables."""
+    figures = Path(cfg.path("output.figures_dir"))
+    tables = Path(cfg.path("output.tables_dir"))
+    dpi = int(cfg.output.get("dpi", 160))
+
+    historical = pd.read_csv(tables / "stress_historical_episodes.csv")
+    hypothetical = pd.read_csv(tables / "stress_hypothetical_scenarios.csv")
+    var_table = pd.concat(comparisons.values(), ignore_index=True)
+
+    panel_start = cfg.data["start_date"]
+    panel_end = cfg.data["end_date"]
+    labels = {n: cfg.portfolios[n].get("label", n) for n in PORTFOLIO_ORDER}
+
+    fig = plots.plot_executive_summary(
+        summary=summary,
+        stress_historical=historical,
+        stress_hypothetical=hypothetical,
+        var_table=var_table,
+        labels=labels,
+        sample=f"{panel_start} to {panel_end}",
+        primary=cfg.output.get("primary_portfolio", "volatility_target"),
+    )
+    plots.save(fig, figures / "00_executive_summary.png", dpi)
+
+
 def stage_headlines(
     cfg: Config,
     summary: pd.DataFrame,
@@ -551,27 +581,30 @@ def run(cfg: Config | None = None, force_download: bool = False) -> Dict:
     plots.use_style()
     started = time.time()
 
-    print("[1/7] data")
+    print("[1/8] data")
     panel = stage_data(cfg, force=force_download)
     returns = dataio.compute_returns(panel)
 
-    print("[2/7] portfolio construction")
+    print("[2/8] portfolio construction")
     results = stage_portfolios(cfg, returns)
 
-    print("[3/7] performance")
+    print("[3/8] performance")
     summary = stage_performance(cfg, returns, results)
 
-    print("[4/7] structure and risk contribution")
+    print("[4/8] structure and risk contribution")
     stage_structure(cfg, returns, results)
 
-    print("[5/7] value at risk")
+    print("[5/8] value at risk")
     comparisons = stage_risk(cfg, returns, results)
 
-    print("[6/7] stress testing")
+    print("[6/8] stress testing")
     stage_stress(cfg, returns, results)
 
-    print("[7/7] var backtesting")
+    print("[7/8] var backtesting")
     backtests = stage_backtest(cfg, results)
+
+    print("[8/8] executive summary")
+    stage_summary_slide(cfg, summary, comparisons)
 
     headline = stage_headlines(cfg, summary, comparisons, backtests, panel)
     print(f"\nDone in {time.time() - started:.1f}s.")
